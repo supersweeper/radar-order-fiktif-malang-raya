@@ -1,1121 +1,1311 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
- <meta charset="UTF-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- <title>Radar Order Fiktif Malang Raya</title>
- <link rel="preconnect" href="https://fonts.googleapis.com" />
- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
- <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
- <style>
-  :root {
-   --bg: #f4f6fb;
-   --surface: #ffffff;
-   --surface-2: #eef2f9;
-   --text: #0f172a;
-   --muted: #64748b;
-   --border: #e2e8f0;
-   --primary: #0f766e;
-   --primary-ink: #ffffff;
-   --primary-soft: #ccfbf1;
-   --danger: #dc2626;
-   --danger-soft: #fee2e2;
-   --warn: #d97706;
-   --warn-soft: #fef3c7;
-   --ok: #15803d;
-   --ok-soft: #dcfce7;
-   --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-   --radius: 16px;
-  }
-  body.dark {
-   --bg: #0b1120;
-   --surface: #131c31;
-   --surface-2: #1c2842;
-   --text: #f8fafc;
-   --muted: #94a3b8;
-   --border: #253352;
-   --primary: #14b8a6;
-   --primary-ink: #042f2e;
-   --primary-soft: rgba(20, 184, 166, 0.16);
-   --danger: #f87171;
-   --danger-soft: rgba(248, 113, 113, 0.16);
-   --warn: #fbbf24;
-   --warn-soft: rgba(251, 191, 36, 0.16);
-   --ok: #4ade80;
-   --ok-soft: rgba(74, 222, 128, 0.16);
-   --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  }
-  * { box-sizing: border-box; }
-  body {
-   margin: 0;
-   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-   background: var(--bg);
-   color: var(--text);
-   line-height: 1.45;
-   -webkit-font-smoothing: antialiased;
-  }
-  .app-shell {
-   max-width: 520px;
-   margin: 0 auto;
-   min-height: 100vh;
-   background: var(--bg);
-   padding-bottom: 84px;
-   position: relative;
-  }
-  .topbar {
-   position: sticky;
-   top: 0;
-   z-index: 30;
-   background: var(--surface);
-   border-bottom: 1px solid var(--border);
-   padding: 12px 16px;
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   gap: 10px;
-  }
-  .brand-title {
-   font-size: 16px;
-   font-weight: 800;
-   letter-spacing: -0.02em;
-   margin: 0;
-  }
-  .brand-sub {
-   font-size: 11px;
-   color: var(--muted);
-   display: flex;
-   align-items: center;
-   gap: 6px;
-   margin-top: 2px;
-  }
-  .dot {
-   width: 8px;
-   height: 8px;
-   border-radius: 50%;
-   background: var(--warn);
-   display: inline-block;
-  }
-  .dot.online { background: var(--ok); }
-  .icon-btn {
-   border: 1px solid var(--border);
-   background: var(--surface-2);
-   color: var(--text);
-   border-radius: 10px;
-   padding: 8px 10px;
-   font-size: 12px;
-   font-weight: 700;
-   cursor: pointer;
-  }
-  .container { padding: 14px 16px; }
-  .card {
-   background: var(--surface);
-   border: 1px solid var(--border);
-   border-radius: var(--radius);
-   padding: 14px;
-   box-shadow: var(--shadow);
-   margin-bottom: 12px;
-  }
-  .hero-badge {
-   display: inline-block;
-   background: var(--primary-soft);
-   color: var(--primary);
-   font-size: 11px;
-   font-weight: 800;
-   padding: 4px 10px;
-   border-radius: 999px;
-   margin-bottom: 8px;
-  }
-  .hero-h1 {
-   font-size: 22px;
-   font-weight: 800;
-   margin: 0 0 6px;
-   letter-spacing: -0.02em;
-  }
-  .muted { color: var(--muted); font-size: 13px; }
-  .grid-3 {
-   display: grid;
-   grid-template-columns: repeat(3, 1fr);
-   gap: 8px;
-   margin-bottom: 12px;
-  }
-  .stat-box {
-   background: var(--surface);
-   border: 1px solid var(--border);
-   border-radius: 14px;
-   padding: 10px;
-   text-align: center;
-  }
-  .stat-num { font-size: 18px; font-weight: 800; }
-  .stat-lbl { font-size: 11px; color: var(--muted); }
-  .chip-row {
-   display: flex;
-   gap: 6px;
-   overflow-x: auto;
-   padding-bottom: 4px;
-   margin-bottom: 10px;
-  }
-  .chip {
-   border: 1px solid var(--border);
-   background: var(--surface);
-   color: var(--text);
-   padding: 7px 12px;
-   border-radius: 999px;
-   font-size: 12px;
-   font-weight: 700;
-   white-space: nowrap;
-   cursor: pointer;
-  }
-  .chip.active {
-   background: var(--primary);
-   color: var(--primary-ink);
-   border-color: var(--primary);
-  }
-  .input, .select, .textarea {
-   width: 100%;
-   border: 1px solid var(--border);
-   background: var(--surface-2);
-   color: var(--text);
-   border-radius: 12px;
-   padding: 10px 12px;
-   font-family: inherit;
-   font-size: 13px;
-   margin-top: 5px;
-   margin-bottom: 10px;
-  }
-  .textarea { min-height: 76px; resize: vertical; }
-  label { font-size: 12px; font-weight: 700; display: block; }
-  .btn {
-   border: none;
-   border-radius: 12px;
-   padding: 11px 14px;
-   font-family: inherit;
-   font-size: 13px;
-   font-weight: 700;
-   cursor: pointer;
-   display: inline-flex;
-   align-items: center;
-   justify-content: center;
-   gap: 6px;
-   text-decoration: none;
-  }
-  .btn-primary { background: var(--primary); color: var(--primary-ink); width: 100%; }
-  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-  .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 10px; }
-  .report-card {
-   background: var(--surface);
-   border: 1px solid var(--border);
-   border-radius: 14px;
-   padding: 12px;
-   margin-bottom: 10px;
-  }
-  .report-top {
-   display: flex;
-   justify-content: space-between;
-   align-items: flex-start;
-   gap: 8px;
-   margin-bottom: 6px;
-  }
-  .tag {
-   display: inline-block;
-   font-size: 11px;
-   font-weight: 700;
-   padding: 3px 8px;
-   border-radius: 8px;
-   background: var(--surface-2);
-  }
-  .tag-danger { background: var(--danger-soft); color: var(--danger); }
-  .tag-warn { background: var(--warn-soft); color: var(--warn); }
-  .tag-ok { background: var(--ok-soft); color: var(--ok); }
-  .driver-card {
-   background: linear-gradient(135deg, #0f766e, #115e59);
-   color: #ffffff;
-   border-radius: 16px;
-   padding: 14px;
-   margin-bottom: 12px;
-  }
-  .driver-card .input, .driver-card .select {
-   background: rgba(255,255,255,0.16);
-   color: #ffffff;
-   border-color: rgba(255,255,255,0.28);
-  }
-  .driver-card .select option { color: #0f172a; }
-  .driver-card label { color: rgba(255,255,255,0.9); }
-  #mapBox {
-   height: 270px;
-   width: 100%;
-   border-radius: 14px;
-   overflow: hidden;
-   border: 1px solid var(--border);
-   margin-bottom: 10px;
-   z-index: 1;
-  }
-  .check-item {
-   display: flex;
-   align-items: flex-start;
-   gap: 10px;
-   padding: 9px 10px;
-   border: 1px solid var(--border);
-   border-radius: 12px;
-   margin-bottom: 8px;
-   background: var(--surface-2);
-   font-size: 13px;
-  }
-  .check-item input { margin-top: 3px; }
-  .bottom-nav {
-   position: fixed;
-   bottom: 0;
-   left: 50%;
-   transform: translateX(-50%);
-   width: 100%;
-   max-width: 520px;
-   background: var(--surface);
-   border-top: 1px solid var(--border);
-   display: grid;
-   grid-template-columns: repeat(5, 1fr);
-   padding: 6px 4px;
-   z-index: 40;
-  }
-  .nav-btn {
-   background: none;
-   border: none;
-   color: var(--muted);
-   font-family: inherit;
-   font-size: 10px;
-   font-weight: 700;
-   padding: 5px 2px;
-   border-radius: 10px;
-   cursor: pointer;
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   gap: 2px;
-  }
-  .nav-btn.active { color: var(--primary); background: var(--primary-soft); }
-  .toast {
-   position: fixed;
-   bottom: 76px;
-   left: 50%;
-   transform: translateX(-50%);
-   background: #0f172a;
-   color: #ffffff;
-   padding: 9px 14px;
-   border-radius: 999px;
-   font-size: 12px;
-   font-weight: 700;
-   z-index: 60;
-   display: none;
-   max-width: 90%;
-   text-align: center;
-  }
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .hidden { display: none !important; }
- </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radar Order Fiktif Malang Raya</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --surface-2: #eef2f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #0f766e;
+      --primary-ink: #ffffff;
+      --primary-soft: #ccfbf1;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --warn: #d97706;
+      --warn-soft: #fef3c7;
+      --ok: #15803d;
+      --ok-soft: #dcfce7;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      --radius: 16px;
+    }
+    body.dark {
+      --bg: #0b1120;
+      --surface: #131c31;
+      --surface-2: #1c2842;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #253352;
+      --primary: #14b8a6;
+      --primary-ink: #042f2e;
+      --primary-soft: rgba(20, 184, 166, 0.16);
+      --danger: #f87171;
+      --danger-soft: rgba(248, 113, 113, 0.16);
+      --warn: #fbbf24;
+      --warn-soft: rgba(251, 191, 36, 0.16);
+      --ok: #4ade80;
+      --ok-soft: rgba(74, 222, 128, 0.16);
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    .app-shell {
+      max-width: 520px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      padding-bottom: 84px;
+      position: relative;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warn);
+      display: inline-block;
+    }
+    .dot.online { background: var(--ok); }
+    .icon-btn {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .container { padding: 14px 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    .hero-h1 {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .muted { color: var(--muted); font-size: 13px; }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-num { font-size: 18px; font-weight: 800; }
+    .stat-lbl { font-size: 11px; color: var(--muted); }
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .chip.active {
+      background: var(--primary);
+      color: var(--primary-ink);
+      border-color: var(--primary);
+    }
+    .input, .select, .textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 13px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+    .textarea { min-height: 76px; resize: vertical; }
+    label { font-size: 12px; font-weight: 700; display: block; }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--primary); color: var(--primary-ink); width: 100%; }
+    .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 10px; }
+    .report-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .report-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: var(--surface-2);
+    }
+    .tag-danger { background: var(--danger-soft); color: var(--danger); }
+    .tag-warn { background: var(--warn-soft); color: var(--warn); }
+    .tag-ok { background: var(--ok-soft); color: var(--ok); }
+    .driver-card {
+      background: linear-gradient(135deg, #0f766e, #115e59);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .driver-card .input, .driver-card .select {
+      background: rgba(255,255,255,0.16);
+      color: #ffffff;
+      border-color: rgba(255,255,255,0.28);
+    }
+    .driver-card .select option { color: #0f172a; }
+    .driver-card label { color: rgba(255,255,255,0.9); }
+    #mapBox {
+      height: 270px;
+      width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      z-index: 1;
+    }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: var(--surface-2);
+      font-size: 13px;
+    }
+    .check-item input { margin-top: 3px; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 520px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 4px;
+      z-index: 40;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 5px 2px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .nav-btn.active { color: var(--primary); background: var(--primary-soft); }
+    .toast {
+      position: fixed;
+      bottom: 76px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 60;
+      display: none;
+      max-width: 90%;
+      text-align: center;
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .hidden { display: none !important; }
+  </style>
 </head>
-<body> <div class="app-shell">
- <header class="topbar">
-  <div>
-   <h1 class="brand-title">Radar Order Fiktif Malang Raya</h1>
-   <div class="brand-sub">
-    <span class="dot" id="syncDot"></span>
-    <span id="syncStatusText">Mode Lokal (Siap Sync Sheets)</span>
-    <span>•</span>
-    <span id="activeAreaBadge">Semua Malang Raya</span>
-   </div>
-  </div>
-  <div style="display:flex;gap:6px;">
-   <button class="icon-btn" id="btnSyncTop" title="Sinkronkan Data">↻</button>
-   <button class="icon-btn" id="btnThemeTop" title="Mode Gelap/Terang">🌙</button>
-  </div>
- </header>
- <!-- 0. ONBOARDING / AREA & PROFIL DRIVER -->
- <section id="view-onboarding" class="container">
-  <div class="card">
-   <span class="hero-badge">MALANG RAYA • KOTA MALANG, KAB. MALANG &amp; KOTA BATU</span>
-   <h2 class="hero-h1">Cek dulu sebelum jalan, hemat bensin.</h2>
-   <p class="muted" style="margin:0 0 12px;">Pantau titik order fiktif, cek risiko orderan masuk, salin template chat konfirmasi, dan sedekahkan makanan berlebih ke panti asuhan terdekat di Malang Raya.</p>
-   <label for="onboardWilayah">Pilih Wilayah Operasional Malang Raya</label>
-   <select id="onboardWilayah" class="select">
-    <option value="Semua Malang Raya">Semua Malang Raya (Kota Malang, Kab. Malang &amp; Kota Batu)</option>
-    <option value="Kota Malang">Kota Malang</option>
-    <option value="Kabupaten Malang">Kabupaten Malang</option>
-    <option value="Kota Batu">Kota Batu</option>
-   </select>
-   <label for="onboardKecamatan">Kecamatan / Area Fokus (Opsional)</label>
-   <select id="onboardKecamatan" class="select">
-    <option value="">Semua Kecamatan</option>
-    <option value="Lowokwaru">Lowokwaru (Kota Malang)</option>
-    <option value="Klojen">Klojen (Kota Malang)</option>
-    <option value="Sukun">Sukun (Kota Malang)</option>
-    <option value="Blimbing">Blimbing (Kota Malang)</option>
-    <option value="Kedungkandang">Kedungkandang (Kota Malang)</option>
-    <option value="Singosari">Singosari (Kab. Malang)</option>
-    <option value="Kepanjen">Kepanjen (Kab. Malang)</option>
-    <option value="Dau / Karangploso">Dau / Karangploso (Kab. Malang)</option>
-    <option value="Batu / Sisir">Batu / Sisir (Kota Batu)</option>
-   </select>
-   <div class="driver-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-     <strong style="font-size:13px;">🪪 Kartu ID Driver Terbuka</strong>
-     <span style="font-size:11px;opacity:0.9;">Tersimpan di HP</span>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div>
+      <h1 class="brand-title">Radar Order Fiktif Malang Raya</h1>
+      <div class="brand-sub">
+        <span class="dot" id="syncDot"></span>
+        <span id="syncStatusText">Mode Lokal (Siap Sync Sheets)</span>
+        <span>•</span>
+        <span id="activeAreaBadge">Semua Malang Raya</span>
+      </div>
     </div>
-    <div class="row-2">
-     <div>
-      <label for="driverName">Nama / Panggilan</label>
-      <input id="driverName" class="input" placeholder="Contoh: Dulur Samsul" style="margin-bottom:6px;" />
-     </div>
-     <div>
-      <label for="driverCode">ID / Plat / Komunitas</label>
-      <input id="driverCode" class="input" placeholder="Contoh: MLG-01" style="margin-bottom:6px;" />
-     </div>
+    <div style="display:flex;gap:6px;">
+      <button class="icon-btn" id="btnSyncTop" title="Sinkronkan Data">↻</button>
+      <button class="icon-btn" id="btnThemeTop" title="Mode Gelap/Terang">🌙</button>
     </div>
-    <label style="margin-top:4px;">Aplikasi yang Dijalankan (Boleh Lebih dari Satu)</label>
-    <div id="onboardApps" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
-     <button type="button" class="chip app-pick active" data-app="GoFood">GoFood</button>
-     <button type="button" class="chip app-pick active" data-app="GrabFood">GrabFood</button>
-     <button type="button" class="chip app-pick active" data-app="ShopeeFood">ShopeeFood</button>
-     <button type="button" class="chip app-pick" data-app="Maxim">Maxim</button>
-     <button type="button" class="chip app-pick" data-app="inDrive">inDrive</button>
-    </div>
-    <p style="font-size:11px;opacity:0.88;margin:10px 0 0;">⚠️ Isi dengan data wajar. Data laporan yang jujur membantu sesama driver Malang Raya terhindar dari zonk.</p>
-   </div>
-   <button class="btn btn-primary" id="btnMasukRadar">Masuk &amp; Simpan Pengaturan →</button>
-   <div style="text-align:center;margin-top:10px;">
-    <button class="btn btn-secondary btn-sm" id="btnSkipRadar" style="width:100%;">Atau lihat radar tanpa login →</button>
-   </div>
-  </div>
- </section>
- <!-- 1. BERANDA / RADAR -->
- <section id="view-radar" class="container hidden">
-  <div class="grid-3">
-   <div class="stat-box">
-    <div class="stat-num" id="statTotalLaporan">0</div>
-    <div class="stat-lbl">Titik Dilaporkan</div>
-   </div>
-   <div class="stat-box">
-    <div class="stat-num" id="statTerverifikasi">0</div>
-    <div class="stat-lbl">Tervalidasi</div>
-   </div>
-   <div class="stat-box">
-    <div class="stat-num" id="statKerugian">Rp0</div>
-    <div class="stat-lbl">Estimasi Kerugian</div>
-   </div>
-  </div>
-  <div class="card" style="padding:10px 12px;">
-   <div class="chip-row" id="wilayahChips">
-    <button class="chip active" data-kota="Semua Malang Raya">Semua Malang Raya</button>
-    <button class="chip" data-kota="Kota Malang">Kota Malang</button>
-    <button class="chip" data-kota="Kabupaten Malang">Kabupaten Malang</button>
-    <button class="chip" data-kota="Kota Batu">Kota Batu</button>
-   </div>
-   <div class="chip-row" id="appFilterChips" style="margin-bottom:6px;">
-    <button class="chip active" data-app="Semua">Semua App</button>
-    <button class="chip" data-app="GoFood">GoFood</button>
-    <button class="chip" data-app="GrabFood">GrabFood</button>
-    <button class="chip" data-app="ShopeeFood">ShopeeFood</button>
-    <button class="chip" data-app="Maxim">Maxim</button>
-    <button class="chip" data-app="inDrive">inDrive</button>
-   </div>
-   <input id="searchLaporan" class="input" placeholder="Cari jalan, kecamatan, atau modus (misal: Sigura-gura, Singosari, Batu)..." style="margin-bottom:2px;" />
-  </div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 2px 10px;">
-   <strong style="font-size:14px;">Laporan Terbaru Malang Raya</strong>
-   <button class="btn btn-secondary btn-sm" id="btnQuickLapor">+ Lapor Titik</button>
-  </div>
-  <div id="laporanList"></div>
- </section>
- <!-- 2. CEK RISIKO & TEMPLATE CHAT -->
- <section id="view-cek" class="container hidden">
-  <div class="card">
-   <h2 style="margin:0 0 4px;font-size:18px;">Cek Risiko Order Masuk</h2>
-   <p class="muted" style="margin:0 0 12px;">Centang ciri-ciri yang muncul pada orderan Anda untuk memperkirakan tingkat risikonya.</p>
-   <div id="riskChecklist">
-    <label class="check-item"><input type="checkbox" class="risk-cb" data-score="30" /> <span>Pembayaran <strong>COD / tunai nominal besar</strong> (&gt; Rp100.000) untuk akun baru</span></label>
-    <label class="check-item"><input type="checkbox" class="risk-cb" data-score="25" /> <span>Titik pengantaran mengarah ke <strong>lahan kosong, kuburan, jalan buntu, atau bangunan tutup</strong></span></label>
-    <label class="check-item"><input type="checkbox" class="risk-cb" data-score="25" /> <span>Nomor HP pembeli <strong>tidak aktif / salah sambung / kode luar negeri</strong> saat dihubungi</span></label>
-    <label class="check-item"><input type="checkbox" class="risk-item" data-score="25" /> <span>Ada permintaan aneh di chat (minta <strong>top-up / pulsa / transfer / pindah aplikasi</strong>)</span></label>
-    <label class="check-item"><input type="checkbox" class="risk-cb" data-score="20" /> <span>Alamat teks di catatan berbeda jauh dari pin lokasi peta</span></label>
-   </div>
-   <div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-top:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-     <span style="font-size:12px;font-weight:700;">Skor Risiko Order</span>
-     <span id="riskBadge" class="tag tag-ok">Risiko Rendah (0%)</span>
-    </div>
-    <div style="font-size:22px;font-weight:800;margin-top:4px;" id="riskScoreText">0% — Aman / Pantau</div>
-    <p class="muted" style="margin:4px 0 0;font-size:12px;" id="riskAdvice">Tetap konfirmasi via chat/telepon sebelum belanja pesanan berisiko tinggi.</p>
-   </div>
-  </div>
-  <div class="card">
-   <h3 style="margin:0 0 4px;font-size:16px;">Template Chat Anti-Fiktif</h3>
-   <p class="muted" style="margin:0 0 10px;">Salin pesan sopan dan jelas untuk konfirmasi ke pelanggan sebelum jalan.</p>
-   <div id="chatTemplates"></div>
-  </div>
- </section>
- <!-- 3. LAPOR & PETA TITIK RAWAN -->
- <section id="view-lapor" class="container hidden">
-  <div class="card">
-   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-    <h2 style="margin:0;font-size:17px;">Peta Titik Fiktif Malang Raya</h2>
-    <button class="btn btn-secondary btn-sm" id="btnCenterMalang">📍 Pusat Malang</button>
-   </div>
-   <p class="muted" style="margin:0 0 8px;font-size:12px;">Ketuk sembarang titik di peta untuk mengisi koordinat otomatis pada formulir laporan di bawah.</p>
-   <div id="mapBox"></div>
-   <div style="font-size:12px;color:var(--muted);" id="pickedCoordInfo">Koordinat terpilih: -7.9666, 112.6326 (Ketuk peta untuk mengubah)</div>
-  </div>
-  <div class="card">
-   <h3 style="margin:0 0 10px;font-size:16px;">Kirim Laporan Order Fiktif</h3>
-   <form id="formLapor">
-    <div class="row-2">
-     <div>
-      <label for="inpKota">Wilayah Malang Raya</label>
-      <select id="inpKota" class="select" required>
-       <option value="Kota Malang">Kota Malang</option>
-       <option value="Kabupaten Malang">Kabupaten Malang</option>
-       <option value="Kota Batu">Kota Batu</option>
-      </select>
-     </div>
-     <div>
-      <label for="inpApp">Aplikasi</label>
-      <select id="inpApp" class="select" required>
-       <option value="GoFood">GoFood</option>
-       <option value="GrabFood">GrabFood</option>
-       <option value="ShopeeFood">ShopeeFood</option>
-       <option value="Maxim">Maxim</option>
-       <option value="inDrive">inDrive</option>
-      </select>
-     </div>
-    </div>
-    <label for="inpModus">Jenis Modus</label>
-    <select id="inpModus" class="select" required>
-     <option value="Alamat Palsu / Rumah Kosong">Alamat Palsu / Rumah Kosong</option>
-     <option value="Titik Antar Fiktif / Lahan Kosong">Titik Antar Fiktif / Lahan Kosong</option>
-     <option value="Customer Fiktif / Nomor Tidak Aktif">Customer Fiktif / Nomor Tidak Aktif</option>
-     <option value="Modus Minta Pulsa / Top-Up">Modus Minta Pulsa / Top-Up</option>
-     <option value="COD Fiktif Nominal Besar">COD Fiktif Nominal Besar</option>
-    </select>
-    <label for="inpAlamat">Alamat Titik / Patokan</label>
-    <input id="inpAlamat" class="input" placeholder="Contoh: Jl. Soekarno Hatta No. 45, Lowokwaru, Kota Malang" required />
-    <div class="row-2">
-     <div>
-      <label for="inpLat">Latitude</label>
-      <input id="inpLat" class="input" value="-7.9666" required />
-     </div>
-     <div>
-      <label for="inpLng">Longitude</label>
-      <input id="inpLng" class="input" value="112.6326" required />
-     </div>
-    </div>
-    <button type="button" class="btn btn-secondary btn-sm" id="btnUseMyGps" style="width:100%;margin-bottom:10px;">🛰️ Gunakan Lokasi GPS HP Saya</button>
-    <label for="inpRugi">Estimasi Kerugian (Rp)</label>
-    <input id="inpRugi" type="number" class="input" placeholder="Contoh: 125000" value="0" min="0" />
-    <label for="inpKet">Keterangan Singkat</label>
-    <textarea id="inpKet" class="textarea" placeholder="Ceritakan kronologi singkat agar rekan driver lain waspada..."></textarea>
-    <button type="submit" class="btn btn-primary">Kirim Laporan ke Radar &amp; Database</button>
-   </form>
-  </div>
- </section>
- <!-- 4. PANTI ASUHAN / SEDEKAHIN AJA -->
- <section id="view-panti" class="container hidden">
-  <div class="card">
-   <span class="hero-badge">DARIPADA DIBUANG, SEDEKAHIN AJA</span>
-   <h2 style="margin:4px 0;">Direktori Panti Asuhan Malang Raya</h2>
-   <p class="muted" style="margin:0 0 10px;">Jika ada makanan berlebih atau orderan tersangkut yang aman, hubungi pengurus panti terdekat di Malang Raya sebelum menyerahkan.</p>
-   <select id="filterPantiKota" class="select" style="margin-bottom:8px;">
-    <option value="Semua Malang Raya">Semua Wilayah Malang Raya</option>
-    <option value="Kota Malang">Kota Malang</option>
-    <option value="Kabupaten Malang">Kabupaten Malang</option>
-    <option value="Kota Batu">Kota Batu</option>
-   </select>
-   <button type="button" class="btn btn-secondary btn-sm" id="btnToggleFormPanti" style="width:100%;">+ Tambah Panti Asuhan / Posko Baru</button>
-  </div>
-  <div class="card hidden" id="cardFormPanti">
-   <h3 style="margin:0 0 8px;font-size:15px;">Tambah Data Panti Asuhan Baru</h3>
-   <form id="formPanti">
-    <div class="row-2">
-     <div>
-      <label for="pantiKota">Wilayah</label>
-      <select id="pantiKota" class="select" required>
-       <option value="Kota Malang">Kota Malang</option>
-       <option value="Kabupaten Malang">Kabupaten Malang</option>
-       <option value="Kota Batu">Kota Batu</option>
-      </select>
-     </div>
-     <div>
-      <label for="pantiJam">Jam Operasional</label>
-      <input id="pantiJam" class="input" value="07:00 - 20:00 WIB" required />
-     </div>
-    </div>
-    <label for="pantiNama">Nama Panti Asuhan / Posko</label>
-    <input id="pantiNama" class="input" placeholder="Contoh: Panti Asuhan Muhammadiyah Malang" required />
-    <label for="pantiAlamat">Alamat Lengkap</label>
-    <input id="pantiAlamat" class="input" placeholder="Contoh: Jl. Kawi No. 18, Klojen, Kota Malang" required />
-    <label for="pantiWa">Nomor WhatsApp Pengurus (08...)</label>
-    <input id="pantiWa" class="input" placeholder="Contoh: 081234567890" required />
-    <label for="pantiMaps">Link Google Maps (Opsional)</label>
-    <input id="pantiMaps" class="input" placeholder="https://maps.google.com/?q=..." />
-    <button type="submit" class="btn btn-primary">Simpan Panti Asuhan</button>
-   </form>
-  </div>
-  <div id="pantiList"></div>
- </section>
- <!-- 5. SETELAN & DATABASE -->
- <section id="view-setelan" class="container hidden">
-  <div class="card">
-   <h2 style="margin:0 0 4px;font-size:17px;">Koneksi Database Google Sheets</h2>
-   <p class="muted" style="margin:0 0 10px;">Tempelkan URL Web App Google Apps Script (berakhiran <code>/exec</code>) agar laporan dan data panti tersimpan ke Google Sheets Anda.</p>
-   <label for="gasUrlInput">URL Web App Google Apps Script (/exec)</label>
-   <input id="gasUrlInput" class="input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" />
-   <div class="row-2">
-    <button type="button" class="btn btn-primary" id="btnSaveSyncGas">Simpan &amp; Sinkronkan</button>
-    <button type="button" class="btn btn-secondary" id="btnDownloadHtml">Unduh index.html</button>
-   </div>
-  </div>
-  <div class="card">
-   <h3 style="margin:0 0 6px;font-size:15px;">Wilayah &amp; Tampilan</h3>
-   <label for="setWilayahDefault">Wilayah Default Malang Raya</label>
-   <select id="setWilayahDefault" class="select">
-    <option value="Semua Malang Raya">Semua Malang Raya</option>
-    <option value="Kota Malang">Kota Malang</option>
-    <option value="Kabupaten Malang">Kabupaten Malang</option>
-    <option value="Kota Batu">Kota Batu</option>
-   </select>
-   <div class="row-2" style="margin-top:4px;">
-    <button type="button" class="btn btn-secondary" id="btnOpenOnboarding">Edit Profil &amp; Area</button>
-    <button type="button" class="btn btn-secondary" id="btnResetLocal">Reset Data Lokal</button>
-   </div>
-  </div>
- </section>
- <nav class="bottom-nav">
-  <button class="nav-btn active" data-tab="radar"><span>📡</span><span>Radar</span></button>
-  <button class="nav-btn" data-tab="cek"><span>🛡️</span><span>Cek Order</span></button>
-  <button class="nav-btn" data-tab="lapor"><span>📍</span><span>Lapor</span></button>
-  <button class="nav-btn" data-tab="panti"><span>🤲</span><span>Sedekah</span></button>
-  <button class="nav-btn" data-tab="setelan"><span>⚙️</span><span>Setelan</span></button>
- </nav>
- <div class="toast" id="toastBox"></div> </div> <script>
- const DEFAULT_GAS_URL = "";
- const STORAGE_KEYS = {
-  gasUrl: "radar_mlg_gas_url_v1",
-  settings: "radar_mlg_settings_v1",
-  laporan: "radar_mlg_laporan_v2",
-  panti: "radar_mlg_panti_v2",
-  theme: "radar_mlg_theme_v1"
- };
- const SEED_LAPORAN = [];
- const SEED_PANTI = [];
- const CHAT_TEMPLATES = [
-  {
-   title: "Konfirmasi COD & Titik Antar",
-   text: "Permisi Kak, saya driver sedang memproses pesanan Kakak. Mohon konfirmasi alamat lengkap & patokan rumahnya serta pastikan nomor HP aktif ya Kak supaya pengantaran lancar. Terima kasih."
-  },
-  {
-   title: "Konfirmasi Pesanan Nominal Besar",
-   text: "Halo Kak, pesanan dengan nominal cukup besar sudah saya terima. Boleh dibantu balas chat ini untuk memastikan pesanan benar dari Kakak dan titik lokasi sudah sesuai? Matur nuwun."
-  },
-  {
-   title: "Tolak Permintaan Di Luar Aplikasi",
-   text: "Mohon maaf Kak, sesuai prosedur aplikasi kami tidak melayani transaksi/top-up/pembayaran di luar sistem resmi aplikasi. Terima kasih atas pengertiannya."
-  }
- ];
- try { localStorage.removeItem("radar_mlg_laporan_v1"); localStorage.removeItem("radar_mlg_panti_v1"); } catch (_) {}
+  </header>
 
- let state = {
-  gasUrl: localStorage.getItem(STORAGE_KEYS.gasUrl) || DEFAULT_GAS_URL,
-  settings: JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{"wilayah":"Semua Malang Raya","kecamatan":"","driverName":"","driverCode":"","apps":["GoFood","GrabFood","ShopeeFood"],"onboardingDone":false}'),
-  laporan: JSON.parse(localStorage.getItem(STORAGE_KEYS.laporan) || "null") || SEED_LAPORAN,
-  panti: JSON.parse(localStorage.getItem(STORAGE_KEYS.panti) || "null") || SEED_PANTI,
-  activeKota: "Semua Malang Raya",
-  activeApp: "Semua",
-  searchQuery: "",
-  activeTab: "radar"
- };
- let mapInstance = null;
- let markersLayer = null;
- let pickedMarker = null;
- function showToast(msg) {
-  const el = document.getElementById("toastBox");
-  el.textContent = msg;
-  el.style.display = "block";
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => { el.style.display = "none"; }, 2600);
- }
- function formatRupiah(num) {
-  const n = Number(num) || 0;
-  return "Rp" + n.toLocaleString("id-ID");
- }
- function saveStateLocal() {
-  localStorage.setItem(STORAGE_KEYS.gasUrl, state.gasUrl);
-  localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(state.settings));
-  localStorage.setItem(STORAGE_KEYS.laporan, JSON.stringify(state.laporan));
-  localStorage.setItem(STORAGE_KEYS.panti, JSON.stringify(state.panti));
- }
- function updateHeaderSyncBadge() {
-  const dot = document.getElementById("syncDot");
-  const txt = document.getElementById("syncStatusText");
-  const areaBadge = document.getElementById("activeAreaBadge");
-  areaBadge.textContent = state.activeKota;
-  if (state.gasUrl && state.gasUrl.startsWith("http")) {
-   dot.classList.add("online");
-   txt.textContent = "Terhubung Google Sheets";
-  } else {
-   dot.classList.remove("online");
-   txt.textContent = "Mode Lokal";
-  }
- }
- function switchScreen(screenName) {
-  const screens = ["onboarding", "radar", "cek", "lapor", "panti", "setelan"];
-  screens.forEach(s => {
-   document.getElementById("view-" + s).classList.toggle("hidden", s !== screenName);
-  });
-  const navs = document.querySelectorAll(".nav-btn");
-  navs.forEach(b => b.classList.toggle("active", b.dataset.tab === screenName));
-  if (screenName !== "onboarding") state.activeTab = screenName;
-  if (screenName === "lapor") {
-   setTimeout(initOrRefreshMap, 120);
-  }
-  if (screenName === "panti") renderPanti();
-  if (screenName === "radar") renderRadar();
-  if (screenName === "setelan") {
-   document.getElementById("gasUrlInput").value = state.gasUrl || "";
-   document.getElementById("setWilayahDefault").value = state.settings.wilayah || "Semua Malang Raya";
-  }
- }
- function renderRadar() {
-  updateHeaderSyncBadge();
-  const q = (state.searchQuery || "").toLowerCase().trim();
-  const filtered = state.laporan.filter(item => {
-   const kotaOk = state.activeKota === "Semua Malang Raya" || (item.Kota || "").toLowerCase() === state.activeKota.toLowerCase();
-   const appOk = state.activeApp === "Semua" || (item.Aplikasi || "").toLowerCase() === state.activeApp.toLowerCase();
-   const searchOk = !q || [item.Kota, item.Aplikasi, item.Jenis_Modus, item.Alamat_Titik, item.Keterangan]
-    .some(v => String(v || "").toLowerCase().includes(q));
-   return kotaOk && appOk && searchOk;
-  });
-  const totalRugi = filtered.reduce((acc, r) => acc + (Number(r.Nominal_Kerugian) || 0), 0);
-  const terverif = filtered.filter(r => Number(r.Jumlah_Validasi) >= 3 || String(r.Status || "").toLowerCase().includes("verif")).length;
-  document.getElementById("statTotalLaporan").textContent = filtered.length;
-  document.getElementById("statTerverifikasi").textContent = terverif;
-  document.getElementById("statKerugian").textContent = totalRugi >= 1000000 ? "Rp" + (totalRugi / 1000000).toFixed(1) + "jt" : formatRupiah(totalRugi);
-  const listEl = document.getElementById("laporanList");
-  if (!filtered.length) {
-   listEl.innerHTML = `<div class="card" style="text-align:center;"><p class="muted" style="margin:0;">Belum ada laporan untuk filter Malang Raya ini.</p></div>`;
-   return;
-  }
-  listEl.innerHTML = filtered.map(r => {
-   const valCount = Number(r.Jumlah_Validasi) || 0;
-   const isHigh = valCount >= 3;
-   const mapsLink = (r.Latitude && r.Longitude)
-    ? `https://www.google.com/maps?q=${encodeURIComponent(r.Latitude)},${encodeURIComponent(r.Longitude)}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.Alamat_Titik || "Malang Raya")}`;
-   return `
-    <div class="report-card">
-     <div class="report-top">
-      <div>
-       <span class="tag ${isHigh ? "tag-danger" : "tag-warn"}">${r.Jenis_Modus || "Order Fiktif"}</span>
-       <span class="tag">${r.Aplikasi || "Ojol"}</span>
-       <span class="tag">${r.Kota || "Malang Raya"}</span>
+  <!-- 0. ONBOARDING / AREA & PROFIL DRIVER -->
+  <section id="view-onboarding" class="container">
+    <div class="card">
+      <span class="hero-badge">MALANG RAYA • KOTA MALANG, KAB. MALANG &amp; KOTA BATU</span>
+      <h2 class="hero-h1">Cek dulu sebelum jalan, hemat bensin.</h2>
+      <p class="muted" style="margin:0 0 12px;">Pantau titik order fiktif, cek risiko orderan masuk, salin template chat konfirmasi, dan sedekahkan makanan berlebih ke panti asuhan terdekat di Malang Raya.</p>
+
+      <label for="onboardWilayah">Pilih Wilayah Operasional Malang Raya</label>
+      <select id="onboardWilayah" class="select">
+        <option value="Semua Malang Raya">Semua Malang Raya (Kota Malang, Kab. Malang &amp; Kota Batu)</option>
+        <option value="Kota Malang">Kota Malang</option>
+        <option value="Kabupaten Malang">Kabupaten Malang</option>
+        <option value="Kota Batu">Kota Batu</option>
+      </select>
+
+      <label for="onboardKecamatan">Kecamatan / Area Fokus (Opsional)</label>
+      <select id="onboardKecamatan" class="select">
+        <option value="">Semua Kecamatan</option>
+        <option value="Lowokwaru">Lowokwaru (Kota Malang)</option>
+        <option value="Klojen">Klojen (Kota Malang)</option>
+        <option value="Sukun">Sukun (Kota Malang)</option>
+        <option value="Blimbing">Blimbing (Kota Malang)</option>
+        <option value="Kedungkandang">Kedungkandang (Kota Malang)</option>
+        <option value="Singosari">Singosari (Kab. Malang)</option>
+        <option value="Kepanjen">Kepanjen (Kab. Malang)</option>
+        <option value="Dau / Karangploso">Dau / Karangploso (Kab. Malang)</option>
+        <option value="Batu / Sisir">Batu / Sisir (Kota Batu)</option>
+      </select>
+
+      <div class="driver-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="font-size:13px;">🪪 Kartu ID Driver Terbuka</strong>
+          <span style="font-size:11px;opacity:0.9;">Tersimpan di HP</span>
+        </div>
+        <div class="row-2">
+          <div>
+            <label for="driverName">Nama / Panggilan</label>
+            <input id="driverName" class="input" placeholder="Contoh: Dulur Samsul" style="margin-bottom:6px;" />
+          </div>
+          <div>
+            <label for="driverCode">ID / Plat / Komunitas</label>
+            <input id="driverCode" class="input" placeholder="Contoh: MLG-01" style="margin-bottom:6px;" />
+          </div>
+        </div>
+        <label style="margin-top:4px;">Aplikasi yang Dijalankan (Boleh Lebih dari Satu)</label>
+        <div id="onboardApps" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          <button type="button" class="chip app-pick active" data-app="GoFood">GoFood</button>
+          <button type="button" class="chip app-pick active" data-app="GrabFood">GrabFood</button>
+          <button type="button" class="chip app-pick active" data-app="ShopeeFood">ShopeeFood</button>
+          <button type="button" class="chip app-pick" data-app="Maxim">Maxim</button>
+          <button type="button" class="chip app-pick" data-app="inDrive">inDrive</button>
+        </div>
+        <p style="font-size:11px;opacity:0.88;margin:10px 0 0;">⚠️ Isi dengan data wajar. Data laporan yang jujur membantu sesama driver Malang Raya terhindar dari zonk.</p>
       </div>
-      <span style="font-size:11px;color:var(--muted);">${r.Waktu || ""}</span>
-     </div>
-     <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${r.Alamat_Titik || "-"}</div>
-     <p class="muted" style="margin:0 0 8px;font-size:12px;">${r.Keterangan || "Tidak ada catatan tambahan."}</p>
-     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-      <span style="font-size:12px;font-weight:700;color:var(--danger);">Est. Rugi: ${formatRupiah(r.Nominal_Kerugian)}</span>
-      <div style="display:flex;gap:6px;">
-       <a class="btn btn-secondary btn-sm" href="${mapsLink}" target="_blank" rel="noopener">Maps</a>
-       <button class="btn btn-secondary btn-sm" onclick="handleValidasi('${String(r.ID).replace(/'/g, "")}')">👍 Valid (${valCount})</button>
+
+      <button class="btn btn-primary" id="btnMasukRadar">Masuk &amp; Simpan Pengaturan →</button>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn btn-secondary btn-sm" id="btnSkipRadar" style="width:100%;">Atau lihat radar tanpa login →</button>
       </div>
-     </div>
     </div>
-   `;
-  }).join("");
- }
- async function handleValidasi(id) {
-  const idx = state.laporan.findIndex(x => String(x.ID) === String(id));
-  if (idx === -1) return;
-  state.laporan[idx].Jumlah_Validasi = (Number(state.laporan[idx].Jumlah_Validasi) || 0) + 1;
-  saveStateLocal();
-  renderRadar();
-  showToast("Validasi laporan ditambahkan");
-  if (state.gasUrl) {
-   try {
-    await fetch(state.gasUrl, {
-     method: "POST",
-     mode: "no-cors",
-     headers: { "Content-Type": "application/json" },
-     body: JSON.stringify({ action: "validasi", id })
-    });
-   } catch (_) {}
-  }
- }
- function initRiskChecker() {
-  const cbs = document.querySelectorAll(".risk-cb");
-  const updateRisk = () => {
-   let score = 0;
-   cbs.forEach(cb => { if (cb.checked) score += Number(cb.dataset.score || 0); });
-   if (score > 100) score = 100;
-   const badge = document.getElementById("riskBadge");
-   const scoreText = document.getElementById("riskScoreText");
-   const advice = document.getElementById("riskAdvice");
-   if (score >= 50) {
-    badge.className = "tag tag-danger";
-    badge.textContent = `Risiko Tinggi (${score}%)`;
-    scoreText.textContent = `${score}% — Waspada Tinggi!`;
-    advice.textContent = "Sangat disarankan konfirmasi ulang via chat/telepon & dokumentasikan bukti chat sebelum jalan.";
-   } else if (score >= 25) {
-    badge.className = "tag tag-warn";
-    badge.textContent = `Risiko Sedang (${score}%)`;
-    scoreText.textContent = `${score}% — Perlu Konfirmasi`;
-    advice.textContent = "Kirim template chat konfirmasi sebelum mengambil/mengantar pesanan.";
-   } else {
-    badge.className = "tag tag-ok";
-    badge.textContent = `Risiko Rendah (${score}%)`;
-    scoreText.textContent = `${score}% — Pantau Wajar`;
-    advice.textContent = "Tetap perhatikan titik antar & kejelasan kontak pelanggan.";
-   }
+  </section>
+
+  <!-- 1. BERANDA / RADAR -->
+  <section id="view-radar" class="container hidden">
+    <div class="grid-3">
+      <div class="stat-box">
+        <div class="stat-num" id="statTotalLaporan">0</div>
+        <div class="stat-lbl">Titik Dilaporkan</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="statTerverifikasi">0</div>
+        <div class="stat-lbl">Tervalidasi</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="statKerugian">Rp0</div>
+        <div class="stat-lbl">Estimasi Kerugian</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:10px 12px;">
+      <div class="chip-row" id="wilayahChips">
+        <button class="chip active" data-kota="Semua Malang Raya">Semua Malang Raya</button>
+        <button class="chip" data-kota="Kota Malang">Kota Malang</button>
+        <button class="chip" data-kota="Kabupaten Malang">Kabupaten Malang</button>
+        <button class="chip" data-kota="Kota Batu">Kota Batu</button>
+      </div>
+      <div class="chip-row" id="appFilterChips" style="margin-bottom:6px;">
+        <button class="chip active" data-app="Semua">Semua App</button>
+        <button class="chip" data-app="GoFood">GoFood</button>
+        <button class="chip" data-app="GrabFood">GrabFood</button>
+        <button class="chip" data-app="ShopeeFood">ShopeeFood</button>
+        <button class="chip" data-app="Maxim">Maxim</button>
+        <button class="chip" data-app="inDrive">inDrive</button>
+      </div>
+      <input id="searchLaporan" class="input" placeholder="Cari jalan, kecamatan, atau modus (misal: Sigura-gura, Singosari, Batu)..." style="margin-bottom:2px;" />
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 2px 10px;">
+      <strong style="font-size:14px;">Laporan Terbaru Malang Raya</strong>
+      <button class="btn btn-secondary btn-sm" id="btnQuickLapor">+ Lapor Titik</button>
+    </div>
+
+    <div id="laporanList"></div>
+  </section>
+
+  <!-- 2. CEK RISIKO & TEMPLATE CHAT -->
+  <section id="view-cek" class="container hidden">
+    <div class="card">
+      <h2 style="margin:0 0 4px;font-size:18px;">Cek Risiko Order Masuk</h2>
+      <p class="muted" style="margin:0 0 12px;">Centang ciri-ciri yang muncul pada orderan Anda untuk memperkirakan tingkat risikonya.</p>
+
+      <div id="riskChecklist">
+        <label class="check-item"><input type="checkbox" class="risk-cb" data-score="30" /> <span>Pembayaran <strong>COD / tunai nominal besar</strong> (&gt; Rp100.000) untuk akun baru</span></label>
+        <label class="check-item"><input type="checkbox" class="risk-cb" data-score="25" /> <span>Titik pengantaran mengarah ke <strong>lahan kosong, kuburan, jalan buntu, atau bangunan tutup</strong></span></label>
+        <label class="check-item"><input type="checkbox" class="risk-cb" data-score="25" /> <span>Nomor HP pembeli <strong>tidak aktif / salah sambung / kode luar negeri</strong> saat dihubungi</span></label>
+        <label class="check-item"><input type="checkbox" class="risk-item" data-score="25" /> <span>Ada permintaan aneh di chat (minta <strong>top-up / pulsa / transfer / pindah aplikasi</strong>)</span></label>
+        <label class="check-item"><input type="checkbox" class="risk-cb" data-score="20" /> <span>Alamat teks di catatan berbeda jauh dari pin lokasi peta</span></label>
+      </div>
+
+      <div style="background:var(--surface-2);border-radius:14px;padding:12px;margin-top:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:700;">Skor Risiko Order</span>
+          <span id="riskBadge" class="tag tag-ok">Risiko Rendah (0%)</span>
+        </div>
+        <div style="font-size:22px;font-weight:800;margin-top:4px;" id="riskScoreText">0% — Aman / Pantau</div>
+        <p class="muted" style="margin:4px 0 0;font-size:12px;" id="riskAdvice">Tetap konfirmasi via chat/telepon sebelum belanja pesanan berisiko tinggi.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px;font-size:16px;">Template Chat Anti-Fiktif</h3>
+      <p class="muted" style="margin:0 0 10px;">Salin pesan sopan dan jelas untuk konfirmasi ke pelanggan sebelum jalan.</p>
+      <div id="chatTemplates"></div>
+    </div>
+  </section>
+
+  <!-- 3. LAPOR & PETA TITIK RAWAN -->
+  <section id="view-lapor" class="container hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <h2 style="margin:0;font-size:17px;">Peta Titik Fiktif Malang Raya</h2>
+        <button class="btn btn-secondary btn-sm" id="btnCenterMalang">📍 Pusat Malang</button>
+      </div>
+      <p class="muted" style="margin:0 0 8px;font-size:12px;">Ketuk sembarang titik di peta untuk mengisi koordinat otomatis pada formulir laporan di bawah.</p>
+      <div id="mapBox"></div>
+      <div style="font-size:12px;color:var(--muted);" id="pickedCoordInfo">Koordinat terpilih: -7.9666, 112.6326 (Ketuk peta untuk mengubah)</div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 10px;font-size:16px;">Kirim Laporan Order Fiktif</h3>
+      <form id="formLapor">
+        <div class="row-2">
+          <div>
+            <label for="inpKota">Wilayah Malang Raya</label>
+            <select id="inpKota" class="select" required>
+              <option value="Kota Malang">Kota Malang</option>
+              <option value="Kabupaten Malang">Kabupaten Malang</option>
+              <option value="Kota Batu">Kota Batu</option>
+            </select>
+          </div>
+          <div>
+            <label for="inpApp">Aplikasi</label>
+            <select id="inpApp" class="select" required>
+              <option value="GoFood">GoFood</option>
+              <option value="GrabFood">GrabFood</option>
+              <option value="ShopeeFood">ShopeeFood</option>
+              <option value="Maxim">Maxim</option>
+              <option value="inDrive">inDrive</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="inpModus">Jenis Modus</label>
+        <select id="inpModus" class="select" required>
+          <option value="Alamat Palsu / Rumah Kosong">Alamat Palsu / Rumah Kosong</option>
+          <option value="Titik Antar Fiktif / Lahan Kosong">Titik Antar Fiktif / Lahan Kosong</option>
+          <option value="Customer Fiktif / Nomor Tidak Aktif">Customer Fiktif / Nomor Tidak Aktif</option>
+          <option value="Modus Minta Pulsa / Top-Up">Modus Minta Pulsa / Top-Up</option>
+          <option value="COD Fiktif Nominal Besar">COD Fiktif Nominal Besar</option>
+        </select>
+
+        <label for="inpAlamat">Alamat Titik / Patokan</label>
+        <input id="inpAlamat" class="input" placeholder="Contoh: Jl. Soekarno Hatta No. 45, Lowokwaru, Kota Malang" required />
+
+        <div class="row-2">
+          <div>
+            <label for="inpLat">Latitude</label>
+            <input id="inpLat" class="input" value="-7.9666" required />
+          </div>
+          <div>
+            <label for="inpLng">Longitude</label>
+            <input id="inpLng" class="input" value="112.6326" required />
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="btnUseMyGps" style="width:100%;margin-bottom:10px;">🛰️ Gunakan Lokasi GPS HP Saya</button>
+
+        <label for="inpRugi">Estimasi Kerugian (Rp)</label>
+        <input id="inpRugi" type="number" class="input" placeholder="Contoh: 125000" value="0" min="0" />
+
+        <label for="inpKet">Keterangan Singkat</label>
+        <textarea id="inpKet" class="textarea" placeholder="Ceritakan kronologi singkat agar rekan driver lain waspada..."></textarea>
+
+        <button type="submit" class="btn btn-primary">Kirim Laporan ke Radar &amp; Database</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 4. PANTI ASUHAN / SEDEKAHIN AJA -->
+  <section id="view-panti" class="container hidden">
+    <div class="card">
+      <span class="hero-badge">DARIPADA DIBUANG, SEDEKAHIN AJA</span>
+      <h2 style="margin:4px 0;">Direktori Panti Asuhan Malang Raya</h2>
+      <p class="muted" style="margin:0 0 10px;">Jika ada makanan berlebih atau orderan tersangkut yang aman, hubungi pengurus panti terdekat di Malang Raya sebelum menyerahkan.</p>
+
+      <select id="filterPantiKota" class="select" style="margin-bottom:8px;">
+        <option value="Semua Malang Raya">Semua Wilayah Malang Raya</option>
+        <option value="Kota Malang">Kota Malang</option>
+        <option value="Kabupaten Malang">Kabupaten Malang</option>
+        <option value="Kota Batu">Kota Batu</option>
+      </select>
+
+      <button type="button" class="btn btn-secondary btn-sm" id="btnToggleFormPanti" style="width:100%;">+ Tambah Panti Asuhan / Posko Baru</button>
+    </div>
+
+    <div class="card hidden" id="cardFormPanti">
+      <h3 style="margin:0 0 8px;font-size:15px;">Tambah Data Panti Asuhan Baru</h3>
+      <form id="formPanti">
+        <div class="row-2">
+          <div>
+            <label for="pantiKota">Wilayah</label>
+            <select id="pantiKota" class="select" required>
+              <option value="Kota Malang">Kota Malang</option>
+              <option value="Kabupaten Malang">Kabupaten Malang</option>
+              <option value="Kota Batu">Kota Batu</option>
+            </select>
+          </div>
+          <div>
+            <label for="pantiJam">Jam Operasional</label>
+            <input id="pantiJam" class="input" value="07:00 - 20:00 WIB" required />
+          </div>
+        </div>
+
+        <label for="pantiNama">Nama Panti Asuhan / Posko</label>
+        <input id="pantiNama" class="input" placeholder="Contoh: Panti Asuhan Muhammadiyah Malang" required />
+
+        <label for="pantiAlamat">Alamat Lengkap</label>
+        <input id="pantiAlamat" class="input" placeholder="Contoh: Jl. Kawi No. 18, Klojen, Kota Malang" required />
+
+        <label for="pantiWa">Nomor WhatsApp Pengurus (08...)</label>
+        <input id="pantiWa" class="input" placeholder="Contoh: 081234567890" required />
+
+        <label for="pantiMaps">Link Google Maps (Opsional)</label>
+        <input id="pantiMaps" class="input" placeholder="https://maps.google.com/?q=..." />
+
+        <button type="submit" class="btn btn-primary">Simpan Panti Asuhan</button>
+      </form>
+    </div>
+
+    <div id="pantiList"></div>
+  </section>
+
+  <!-- 5. SETELAN & DATABASE -->
+  <section id="view-setelan" class="container hidden">
+    <div class="card">
+      <h2 style="margin:0 0 4px;font-size:17px;">Koneksi Database Google Sheets</h2>
+      <p class="muted" style="margin:0 0 10px;">Tempelkan URL Web App Google Apps Script (berakhiran <code>/exec</code>) agar laporan dan data panti tersimpan ke Google Sheets Anda.</p>
+
+      <label for="gasUrlInput">URL Web App Google Apps Script (/exec)</label>
+      <input id="gasUrlInput" class="input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" />
+
+      <div class="row-2">
+        <button type="button" class="btn btn-primary" id="btnSaveSyncGas">Simpan &amp; Sinkronkan</button>
+        <button type="button" class="btn btn-secondary" id="btnDownloadHtml">Unduh index.html</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 6px;font-size:15px;">Wilayah &amp; Tampilan</h3>
+      <label for="setWilayahDefault">Wilayah Default Malang Raya</label>
+      <select id="setWilayahDefault" class="select">
+        <option value="Semua Malang Raya">Semua Malang Raya</option>
+        <option value="Kota Malang">Kota Malang</option>
+        <option value="Kabupaten Malang">Kabupaten Malang</option>
+        <option value="Kota Batu">Kota Batu</option>
+      </select>
+
+      <div class="row-2" style="margin-top:4px;">
+        <button type="button" class="btn btn-secondary" id="btnOpenOnboarding">Edit Profil &amp; Area</button>
+        <button type="button" class="btn btn-secondary" id="btnResetLocal">Reset Data Lokal</button>
+      </div>
+    </div>
+  </section>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="radar"><span>📡</span><span>Radar</span></button>
+    <button class="nav-btn" data-tab="cek"><span>🛡️</span><span>Cek Order</span></button>
+    <button class="nav-btn" data-tab="lapor"><span>📍</span><span>Lapor</span></button>
+    <button class="nav-btn" data-tab="panti"><span>🤲</span><span>Sedekah</span></button>
+    <button class="nav-btn" data-tab="setelan"><span>⚙️</span><span>Setelan</span></button>
+  </nav>
+
+  <div class="toast" id="toastBox"></div>
+</div>
+
+<script>
+  const DEFAULT_GAS_URL = "";
+  const STORAGE_KEYS = {
+    gasUrl: "radar_mlg_gas_url_v1",
+    settings: "radar_mlg_settings_v1",
+    laporan: "radar_mlg_laporan_v1",
+    panti: "radar_mlg_panti_v1",
+    theme: "radar_mlg_theme_v1"
   };
-  cbs.forEach(cb => cb.addEventListener("change", updateRisk));
-  updateRisk();
-  const tplBox = document.getElementById("chatTemplates");
-  tplBox.innerHTML = CHAT_TEMPLATES.map((t, i) => `
-   <div class="report-card" style="margin-bottom:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-     <strong style="font-size:13px;">${t.title}</strong>
-     <button type="button" class="btn btn-secondary btn-sm" onclick="copyTemplate(${i})">Salin</button>
-    </div>
-    <div style="font-size:12px;color:var(--muted);">${t.text}</div>
-   </div>
-  `).join("");
- }
- function copyTemplate(idx) {
-  const txt = CHAT_TEMPLATES[idx]?.text || "";
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-   navigator.clipboard.writeText(txt).then(() => showToast("Template chat disalin")).catch(() => fallbackCopy(txt));
-  } else {
-   fallbackCopy(txt);
+
+  const SEED_LAPORAN = [
+    {
+      ID: "RPT-MLG-001",
+      Waktu: "2026-11-20 19:40",
+      Kota: "Kota Malang",
+      Aplikasi: "GrabFood",
+      Jenis_Modus: "Alamat Palsu / Rumah Kosong",
+      Alamat_Titik: "Jl. Soekarno Hatta No. 45, Lowokwaru, Kota Malang",
+      Latitude: -7.9431,
+      Longitude: 112.6148,
+      Nominal_Kerugian: 145000,
+      Keterangan: "Pesanan COD 5 porsi, titik mengarah ke rumah kosong dan nomor pemesan tidak aktif.",
+      Jumlah_Validasi: 5,
+      Status: "Terverifikasi"
+    },
+    {
+      ID: "RPT-KBM-002",
+      Waktu: "2026-11-21 20:15",
+      Kota: "Kabupaten Malang",
+      Aplikasi: "GoFood",
+      Jenis_Modus: "Titik Antar Fiktif / Lahan Kosong",
+      Alamat_Titik: "Jl. Raya Singosari No. 88, Singosari, Kabupaten Malang",
+      Latitude: -7.8925,
+      Longitude: 112.6658,
+      Nominal_Kerugian: 220000,
+      Keterangan: "COD besar malam hari ke area sepi/lahan kosong, pembeli mematikan ponsel saat driver tiba.",
+      Jumlah_Validasi: 6,
+      Status: "Terverifikasi"
+    },
+    {
+      ID: "RPT-BTU-003",
+      Waktu: "2026-11-21 16:30",
+      Kota: "Kota Batu",
+      Aplikasi: "ShopeeFood",
+      Jenis_Modus: "Customer Fiktif / Nomor Tidak Aktif",
+      Alamat_Titik: "Jl. Diponegoro No. 85, Sisir, Kota Batu",
+      Latitude: -7.8712,
+      Longitude: 112.5273,
+      Nominal_Kerugian: 135000,
+      Keterangan: "Pin titik di dekat Alun-alun Batu, pemesan tidak merespons chat maupun panggilan.",
+      Jumlah_Validasi: 4,
+      Status: "Terverifikasi"
+    },
+    {
+      ID: "RPT-KBM-004",
+      Waktu: "2026-11-22 13:10",
+      Kota: "Kabupaten Malang",
+      Aplikasi: "GrabFood",
+      Jenis_Modus: "Modus Minta Pulsa / Top-Up",
+      Alamat_Titik: "Jl. Panglima Sudirman No. 34, Kepanjen, Kabupaten Malang",
+      Latitude: -8.1311,
+      Longitude: 112.5714,
+      Nominal_Kerugian: 85000,
+      Keterangan: "Pelaku meminta top-up/pulsa terlebih dahulu sebelum pesanan diantar.",
+      Jumlah_Validasi: 3,
+      Status: "Menunggu Validasi"
+    }
+  ];
+
+  const SEED_PANTI = [
+    {
+      ID: "PNT-MLG-001",
+      Kota: "Kota Malang",
+      Nama_Panti: "Panti Asuhan Al-Ikhlas Malang",
+      Alamat: "Jl. Bendungan Sigura-gura No. 28, Sukun, Kota Malang",
+      Nomor_WA: "081234567890",
+      Link_Maps: "https://maps.google.com/?q=-7.9582,112.6095",
+      Jam_Operasional: "07:00 - 20:00 WIB",
+      Status: "Aktif"
+    },
+    {
+      ID: "PNT-KBM-001",
+      Kota: "Kabupaten Malang",
+      Nama_Panti: "Panti Asuhan Sunan Kalijaga Singosari",
+      Alamat: "Jl. Raya Karanglo No. 45, Singosari, Kabupaten Malang",
+      Nomor_WA: "085123456789",
+      Link_Maps: "https://maps.google.com/?q=-7.8925,112.6658",
+      Jam_Operasional: "08:00 - 20:00 WIB",
+      Status: "Aktif"
+    },
+    {
+      ID: "PNT-BTU-001",
+      Kota: "Kota Batu",
+      Nama_Panti: "LKSA Panti Asuhan Al-Hidayah Batu",
+      Alamat: "Jl. Panglima Sudirman No. 72, Pesanggrahan, Kota Batu",
+      Nomor_WA: "081398765432",
+      Link_Maps: "https://maps.google.com/?q=-7.8765,112.5180",
+      Jam_Operasional: "08:00 - 19:00 WIB",
+      Status: "Aktif"
+    }
+  ];
+
+  const CHAT_TEMPLATES = [
+    {
+      title: "Konfirmasi COD & Titik Antar",
+      text: "Permisi Kak, saya driver sedang memproses pesanan Kakak. Mohon konfirmasi alamat lengkap & patokan rumahnya serta pastikan nomor HP aktif ya Kak supaya pengantaran lancar. Terima kasih."
+    },
+    {
+      title: "Konfirmasi Pesanan Nominal Besar",
+      text: "Halo Kak, pesanan dengan nominal cukup besar sudah saya terima. Boleh dibantu balas chat ini untuk memastikan pesanan benar dari Kakak dan titik lokasi sudah sesuai? Matur nuwun."
+    },
+    {
+      title: "Tolak Permintaan Di Luar Aplikasi",
+      text: "Mohon maaf Kak, sesuai prosedur aplikasi kami tidak melayani transaksi/top-up/pembayaran di luar sistem resmi aplikasi. Terima kasih atas pengertiannya."
+    }
+  ];
+
+  let state = {
+    gasUrl: localStorage.getItem(STORAGE_KEYS.gasUrl) || DEFAULT_GAS_URL,
+    settings: JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{"wilayah":"Semua Malang Raya","kecamatan":"","driverName":"","driverCode":"","apps":["GoFood","GrabFood","ShopeeFood"],"onboardingDone":false}'),
+    laporan: JSON.parse(localStorage.getItem(STORAGE_KEYS.laporan) || "null") || SEED_LAPORAN,
+    panti: JSON.parse(localStorage.getItem(STORAGE_KEYS.panti) || "null") || SEED_PANTI,
+    activeKota: "Semua Malang Raya",
+    activeApp: "Semua",
+    searchQuery: "",
+    activeTab: "radar"
+  };
+
+  let mapInstance = null;
+  let markersLayer = null;
+  let pickedMarker = null;
+
+  function showToast(msg) {
+    const el = document.getElementById("toastBox");
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => { el.style.display = "none"; }, 2600);
   }
- }
- function fallbackCopy(text) {
-  const ta = document.createElement("textarea");
-  ta.value = text;
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand("copy");
-  document.body.removeChild(ta);
-  showToast("Template chat disalin");
- }
- function initOrRefreshMap() {
-  if (typeof L === "undefined") return;
-  if (!mapInstance) {
-   mapInstance = L.map("mapBox").setView([-7.9666, 112.6326], 11);
-   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap"
-   }).addTo(mapInstance);
-   markersLayer = L.layerGroup().addTo(mapInstance);
-   mapInstance.on("click", (e) => {
-    const lat = Number(e.latlng.lat.toFixed(5));
-    const lng = Number(e.latlng.lng.toFixed(5));
-    document.getElementById("inpLat").value = lat;
-    document.getElementById("inpLng").value = lng;
-    document.getElementById("pickedCoordInfo").textContent = `Koordinat terpilih: ${lat}, ${lng}`;
-    if (pickedMarker) mapInstance.removeLayer(pickedMarker);
-    pickedMarker = L.circleMarker([lat, lng], { radius: 8, color: "#0f766e", fillColor: "#14b8a6", fillOpacity: 0.9 }).addTo(mapInstance);
-   });
+
+  function formatRupiah(num) {
+    const n = Number(num) || 0;
+    return "Rp" + n.toLocaleString("id-ID");
   }
-  mapInstance.invalidateSize();
-  markersLayer.clearLayers();
-  state.laporan.forEach(item => {
-   const lat = Number(item.Latitude);
-   const lng = Number(item.Longitude);
-   if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-    L.circleMarker([lat, lng], {
-     radius: 7,
-     color: "#dc2626",
-     fillColor: "#ef4444",
-     fillOpacity: 0.8
-    }).bindPopup(`<b>${item.Jenis_Modus || "Order Fiktif"}</b><br/>${item.Alamat_Titik || ""}<br/><small>${item.Kota || ""} • ${item.Aplikasi || ""}</small>`).addTo(markersLayer);
-   }
+
+  function saveStateLocal() {
+    localStorage.setItem(STORAGE_KEYS.gasUrl, state.gasUrl);
+    localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(state.settings));
+    localStorage.setItem(STORAGE_KEYS.laporan, JSON.stringify(state.laporan));
+    localStorage.setItem(STORAGE_KEYS.panti, JSON.stringify(state.panti));
+  }
+
+  function updateHeaderSyncBadge() {
+    const dot = document.getElementById("syncDot");
+    const txt = document.getElementById("syncStatusText");
+    const areaBadge = document.getElementById("activeAreaBadge");
+    areaBadge.textContent = state.activeKota;
+    if (state.gasUrl && state.gasUrl.startsWith("http")) {
+      dot.classList.add("online");
+      txt.textContent = "Terhubung Google Sheets";
+    } else {
+      dot.classList.remove("online");
+      txt.textContent = "Mode Lokal";
+    }
+  }
+
+  function switchScreen(screenName) {
+    const screens = ["onboarding", "radar", "cek", "lapor", "panti", "setelan"];
+    screens.forEach(s => {
+      document.getElementById("view-" + s).classList.toggle("hidden", s !== screenName);
+    });
+    const navs = document.querySelectorAll(".nav-btn");
+    navs.forEach(b => b.classList.toggle("active", b.dataset.tab === screenName));
+    if (screenName !== "onboarding") state.activeTab = screenName;
+    if (screenName === "lapor") {
+      setTimeout(initOrRefreshMap, 120);
+    }
+    if (screenName === "panti") renderPanti();
+    if (screenName === "radar") renderRadar();
+    if (screenName === "setelan") {
+      document.getElementById("gasUrlInput").value = state.gasUrl || "";
+      document.getElementById("setWilayahDefault").value = state.settings.wilayah || "Semua Malang Raya";
+    }
+  }
+
+  function renderRadar() {
+    updateHeaderSyncBadge();
+    const q = (state.searchQuery || "").toLowerCase().trim();
+    const filtered = state.laporan.filter(item => {
+      const kotaOk = state.activeKota === "Semua Malang Raya" || (item.Kota || "").toLowerCase() === state.activeKota.toLowerCase();
+      const appOk = state.activeApp === "Semua" || (item.Aplikasi || "").toLowerCase() === state.activeApp.toLowerCase();
+      const searchOk = !q || [item.Kota, item.Aplikasi, item.Jenis_Modus, item.Alamat_Titik, item.Keterangan]
+        .some(v => String(v || "").toLowerCase().includes(q));
+      return kotaOk && appOk && searchOk;
+    });
+
+    const totalRugi = filtered.reduce((acc, r) => acc + (Number(r.Nominal_Kerugian) || 0), 0);
+    const terverif = filtered.filter(r => Number(r.Jumlah_Validasi) >= 3 || String(r.Status || "").toLowerCase().includes("verif")).length;
+
+    document.getElementById("statTotalLaporan").textContent = filtered.length;
+    document.getElementById("statTerverifikasi").textContent = terverif;
+    document.getElementById("statKerugian").textContent = totalRugi >= 1000000 ? "Rp" + (totalRugi / 1000000).toFixed(1) + "jt" : formatRupiah(totalRugi);
+
+    const listEl = document.getElementById("laporanList");
+    if (!filtered.length) {
+      listEl.innerHTML = `<div class="card" style="text-align:center;"><p class="muted" style="margin:0;">Belum ada laporan untuk filter Malang Raya ini.</p></div>`;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(r => {
+      const valCount = Number(r.Jumlah_Validasi) || 0;
+      const isHigh = valCount >= 3;
+      const mapsLink = (r.Latitude && r.Longitude)
+        ? `https://www.google.com/maps?q=${encodeURIComponent(r.Latitude)},${encodeURIComponent(r.Longitude)}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.Alamat_Titik || "Malang Raya")}`;
+      return `
+        <div class="report-card">
+          <div class="report-top">
+            <div>
+              <span class="tag ${isHigh ? "tag-danger" : "tag-warn"}">${r.Jenis_Modus || "Order Fiktif"}</span>
+              <span class="tag">${r.Aplikasi || "Ojol"}</span>
+              <span class="tag">${r.Kota || "Malang Raya"}</span>
+            </div>
+            <span style="font-size:11px;color:var(--muted);">${r.Waktu || ""}</span>
+          </div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${r.Alamat_Titik || "-"}</div>
+          <p class="muted" style="margin:0 0 8px;font-size:12px;">${r.Keterangan || "Tidak ada catatan tambahan."}</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:700;color:var(--danger);">Est. Rugi: ${formatRupiah(r.Nominal_Kerugian)}</span>
+            <div style="display:flex;gap:6px;">
+              <a class="btn btn-secondary btn-sm" href="${mapsLink}" target="_blank" rel="noopener">Maps</a>
+              <button class="btn btn-secondary btn-sm" onclick="handleValidasi('${String(r.ID).replace(/'/g, "")}')">👍 Valid (${valCount})</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function handleValidasi(id) {
+    const idx = state.laporan.findIndex(x => String(x.ID) === String(id));
+    if (idx === -1) return;
+    state.laporan[idx].Jumlah_Validasi = (Number(state.laporan[idx].Jumlah_Validasi) || 0) + 1;
+    saveStateLocal();
+    renderRadar();
+    showToast("Validasi laporan ditambahkan");
+
+    if (state.gasUrl) {
+      try {
+        await fetch(state.gasUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "validasi", id })
+        });
+      } catch (_) {}
+    }
+  }
+
+  function initRiskChecker() {
+    const cbs = document.querySelectorAll(".risk-cb");
+    const updateRisk = () => {
+      let score = 0;
+      cbs.forEach(cb => { if (cb.checked) score += Number(cb.dataset.score || 0); });
+      if (score > 100) score = 100;
+      const badge = document.getElementById("riskBadge");
+      const scoreText = document.getElementById("riskScoreText");
+      const advice = document.getElementById("riskAdvice");
+      if (score >= 50) {
+        badge.className = "tag tag-danger";
+        badge.textContent = `Risiko Tinggi (${score}%)`;
+        scoreText.textContent = `${score}% — Waspada Tinggi!`;
+        advice.textContent = "Sangat disarankan konfirmasi ulang via chat/telepon & dokumentasikan bukti chat sebelum jalan.";
+      } else if (score >= 25) {
+        badge.className = "tag tag-warn";
+        badge.textContent = `Risiko Sedang (${score}%)`;
+        scoreText.textContent = `${score}% — Perlu Konfirmasi`;
+        advice.textContent = "Kirim template chat konfirmasi sebelum mengambil/mengantar pesanan.";
+      } else {
+        badge.className = "tag tag-ok";
+        badge.textContent = `Risiko Rendah (${score}%)`;
+        scoreText.textContent = `${score}% — Pantau Wajar`;
+        advice.textContent = "Tetap perhatikan titik antar & kejelasan kontak pelanggan.";
+      }
+    };
+    cbs.forEach(cb => cb.addEventListener("change", updateRisk));
+    updateRisk();
+
+    const tplBox = document.getElementById("chatTemplates");
+    tplBox.innerHTML = CHAT_TEMPLATES.map((t, i) => `
+      <div class="report-card" style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <strong style="font-size:13px;">${t.title}</strong>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copyTemplate(${i})">Salin</button>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">${t.text}</div>
+      </div>
+    `).join("");
+  }
+
+  function copyTemplate(idx) {
+    const txt = CHAT_TEMPLATES[idx]?.text || "";
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(() => showToast("Template chat disalin")).catch(() => fallbackCopy(txt));
+    } else {
+      fallbackCopy(txt);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("Template chat disalin");
+  }
+
+  function initOrRefreshMap() {
+    if (typeof L === "undefined") return;
+    if (!mapInstance) {
+      mapInstance = L.map("mapBox").setView([-7.9666, 112.6326], 11);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(mapInstance);
+      markersLayer = L.layerGroup().addTo(mapInstance);
+
+      mapInstance.on("click", (e) => {
+        const lat = Number(e.latlng.lat.toFixed(5));
+        const lng = Number(e.latlng.lng.toFixed(5));
+        document.getElementById("inpLat").value = lat;
+        document.getElementById("inpLng").value = lng;
+        document.getElementById("pickedCoordInfo").textContent = `Koordinat terpilih: ${lat}, ${lng}`;
+        if (pickedMarker) mapInstance.removeLayer(pickedMarker);
+        pickedMarker = L.circleMarker([lat, lng], { radius: 8, color: "#0f766e", fillColor: "#14b8a6", fillOpacity: 0.9 }).addTo(mapInstance);
+      });
+    }
+    mapInstance.invalidateSize();
+    markersLayer.clearLayers();
+    state.laporan.forEach(item => {
+      const lat = Number(item.Latitude);
+      const lng = Number(item.Longitude);
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        L.circleMarker([lat, lng], {
+          radius: 7,
+          color: "#dc2626",
+          fillColor: "#ef4444",
+          fillOpacity: 0.8
+        }).bindPopup(`<b>${item.Jenis_Modus || "Order Fiktif"}</b><br/>${item.Alamat_Titik || ""}<br/><small>${item.Kota || ""} • ${item.Aplikasi || ""}</small>`).addTo(markersLayer);
+      }
+    });
+  }
+
+  function renderPanti() {
+    const kotaFilter = document.getElementById("filterPantiKota").value || "Semua Malang Raya";
+    const list = state.panti.filter(p => kotaFilter === "Semua Malang Raya" || (p.Kota || "").toLowerCase() === kotaFilter.toLowerCase());
+    const box = document.getElementById("pantiList");
+
+    if (!list.length) {
+      box.innerHTML = `<div class="card"><p class="muted" style="margin:0;">Belum ada panti terdaftar untuk wilayah ini. Silakan tambah lewat tombol di atas.</p></div>`;
+      return;
+    }
+
+    box.innerHTML = list.map(p => {
+      const cleanWa = String(p.Nomor_WA || "").replace(/\D/g, "").replace(/^0/, "62");
+      const waHref = cleanWa ? `https://wa.me/${cleanWa}?text=${encodeURIComponent("Assalamu'alaikum Kak, izin informasi dari driver Malang Raya terkait penyaluran makanan/sedekah ke " + (p.Nama_Panti || "panti") + ".")}` : "#";
+      const mapsHref = p.Link_Maps || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((p.Nama_Panti || "") + " " + (p.Alamat || "Malang Raya"))}`;
+      return `
+        <div class="report-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span class="tag tag-ok">${p.Kota || "Malang Raya"}</span>
+            <span style="font-size:11px;color:var(--muted);">${p.Jam_Operasional || ""}</span>
+          </div>
+          <div style="font-weight:800;font-size:14px;">${p.Nama_Panti || "-"}</div>
+          <p class="muted" style="margin:3px 0 8px;font-size:12px;">${p.Alamat || "-"}</p>
+          <div style="display:flex;gap:8px;">
+            ${cleanWa ? `<a class="btn btn-primary btn-sm" style="flex:1;" href="${waHref}" target="_blank" rel="noopener">Chat WA</a>` : ""}
+            <a class="btn btn-secondary btn-sm" style="flex:1;" href="${mapsHref}" target="_blank" rel="noopener">Buka Maps</a>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function syncFromGas() {
+    if (!state.gasUrl || !state.gasUrl.startsWith("http")) {
+      showToast("URL API belum diisi di Setelan");
+      return;
+    }
+    try {
+      showToast("Menyinkronkan data...");
+      const res = await fetch(state.gasUrl);
+      const data = await res.json();
+      if (data && data.status === "ok") {
+        if (Array.isArray(data.laporan) && data.laporan.length) state.laporan = data.laporan;
+        if (Array.isArray(data.panti) && data.panti.length) state.panti = data.panti;
+        saveStateLocal();
+        renderRadar();
+        renderPanti();
+        if (mapInstance) initOrRefreshMap();
+        showToast("Sinkronisasi Google Sheets berhasil");
+      }
+    } catch (err) {
+      showToast("Gagal sinkronisasi, cek izin Web App (Siapa saja)");
+    }
+  }
+
+  function downloadCurrentHtml() {
+    const rawHtml = "<!DOCTYPE html>
+" + document.documentElement.outerHTML;
+    const escapedUrl = (state.gasUrl || "").replace(/"/g, "&quot;");
+    const updatedHtml = rawHtml.replace(/const DEFAULT_GAS_URL = "[^"]*";/, `const DEFAULT_GAS_URL = "${escapedUrl}";`);
+    const blob = new Blob([updatedHtml], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "index.html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("File index.html diunduh");
+  }
+
+  function applyTheme(isDark) {
+    document.body.classList.toggle("dark", isDark);
+    document.getElementById("btnThemeTop").textContent = isDark ? "☀️" : "🌙";
+    localStorage.setItem(STORAGE_KEYS.theme, isDark ? "dark" : "light");
+  }
+
+  // Event listeners
+  document.getElementById("btnThemeTop").addEventListener("click", () => {
+    applyTheme(!document.body.classList.contains("dark"));
   });
- }
- function renderPanti() {
-  const kotaFilter = document.getElementById("filterPantiKota").value || "Semua Malang Raya";
-  const list = state.panti.filter(p => kotaFilter === "Semua Malang Raya" || (p.Kota || "").toLowerCase() === kotaFilter.toLowerCase());
-  const box = document.getElementById("pantiList");
-  if (!list.length) {
-   box.innerHTML = `<div class="card"><p class="muted" style="margin:0;">Belum ada panti terdaftar untuk wilayah ini. Silakan tambah lewat tombol di atas.</p></div>`;
-   return;
-  }
-  box.innerHTML = list.map(p => {
-   const cleanWa = String(p.Nomor_WA || "").replace(/\D/g, "").replace(/^0/, "62");
-   const waHref = cleanWa ? `https://wa.me/${cleanWa}?text=${encodeURIComponent("Assalamu'alaikum Kak, izin informasi dari driver Malang Raya terkait penyaluran makanan/sedekah ke " + (p.Nama_Panti || "panti") + ".")}` : "#";
-   const mapsHref = p.Link_Maps || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((p.Nama_Panti || "") + " " + (p.Alamat || "Malang Raya"))}`;
-   return `
-    <div class="report-card">
-     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-      <span class="tag tag-ok">${p.Kota || "Malang Raya"}</span>
-      <span style="font-size:11px;color:var(--muted);">${p.Jam_Operasional || ""}</span>
-     </div>
-     <div style="font-weight:800;font-size:14px;">${p.Nama_Panti || "-"}</div>
-     <p class="muted" style="margin:3px 0 8px;font-size:12px;">${p.Alamat || "-"}</p>
-     <div style="display:flex;gap:8px;">
-      ${cleanWa ? `<a class="btn btn-primary btn-sm" style="flex:1;" href="${waHref}" target="_blank" rel="noopener">Chat WA</a>` : ""}
-      <a class="btn btn-secondary btn-sm" style="flex:1;" href="${mapsHref}" target="_blank" rel="noopener">Buka Maps</a>
-     </div>
-    </div>
-   `;
-  }).join("");
- }
- async function syncFromGas() {
-  if (!state.gasUrl || !state.gasUrl.startsWith("http")) {
-   showToast("URL API belum diisi di Setelan");
-   return;
-  }
-  try {
-   showToast("Menyinkronkan data...");
-   const res = await fetch(state.gasUrl);
-   const data = await res.json();
-   if (data && data.status === "ok") {
-    if (Array.isArray(data.laporan) && data.laporan.length) state.laporan = data.laporan;
-    if (Array.isArray(data.panti) && data.panti.length) state.panti = data.panti;
+
+  document.getElementById("btnSyncTop").addEventListener("click", syncFromGas);
+
+  document.querySelectorAll(".bottom-nav .nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => switchScreen(btn.dataset.tab));
+  });
+
+  document.querySelectorAll("#onboardApps .app-pick").forEach(btn => {
+    btn.addEventListener("click", () => btn.classList.toggle("active"));
+  });
+
+  document.getElementById("btnMasukRadar").addEventListener("click", () => {
+    const wil = document.getElementById("onboardWilayah").value;
+    const kec = document.getElementById("onboardKecamatan").value;
+    const dName = document.getElementById("driverName").value.trim();
+    const dCode = document.getElementById("driverCode").value.trim();
+    const selectedApps = Array.from(document.querySelectorAll("#onboardApps .app-pick.active")).map(b => b.dataset.app);
+
+    state.settings = {
+      wilayah: wil,
+      kecamatan: kec,
+      driverName: dName,
+      driverCode: dCode,
+      apps: selectedApps.length ? selectedApps : ["GoFood", "GrabFood", "ShopeeFood"],
+      onboardingDone: true
+    };
+    state.activeKota = wil;
+    if (kec) document.getElementById("searchLaporan").value = kec, state.searchQuery = kec;
+    saveStateLocal();
+    switchScreen("radar");
+    showToast("Pengaturan Malang Raya tersimpan");
+  });
+
+  document.getElementById("btnSkipRadar").addEventListener("click", () => {
+    state.activeKota = document.getElementById("onboardWilayah").value || "Semua Malang Raya";
+    switchScreen("radar");
+  });
+
+  document.querySelectorAll("#wilayahChips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#wilayahChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      state.activeKota = chip.dataset.kota;
+      renderRadar();
+    });
+  });
+
+  document.querySelectorAll("#appFilterChips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#appFilterChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      state.activeApp = chip.dataset.app;
+      renderRadar();
+    });
+  });
+
+  document.getElementById("searchLaporan").addEventListener("input", (e) => {
+    state.searchQuery = e.target.value;
+    renderRadar();
+  });
+
+  document.getElementById("btnQuickLapor").addEventListener("click", () => switchScreen("lapor"));
+
+  document.getElementById("btnCenterMalang").addEventListener("click", () => {
+    if (mapInstance) mapInstance.setView([-7.9666, 112.6326], 11);
+  });
+
+  document.getElementById("btnUseMyGps").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      showToast("GPS tidak didukung browser ini");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = Number(pos.coords.latitude.toFixed(5));
+        const lng = Number(pos.coords.longitude.toFixed(5));
+        document.getElementById("inpLat").value = lat;
+        document.getElementById("inpLng").value = lng;
+        document.getElementById("pickedCoordInfo").textContent = `Koordinat GPS Anda: ${lat}, ${lng}`;
+        if (mapInstance) mapInstance.setView([lat, lng], 15);
+        showToast("Lokasi GPS berhasil diambil");
+      },
+      () => showToast("Izinkan akses lokasi GPS di HP Anda")
+    );
+  });
+
+  document.getElementById("formLapor").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nowStr = new Date().toISOString().slice(0, 16).replace("T", " ");
+    const payload = {
+      ID: "RPT-" + Date.now().toString().slice(-6),
+      Waktu: nowStr,
+      Kota: document.getElementById("inpKota").value,
+      Aplikasi: document.getElementById("inpApp").value,
+      Jenis_Modus: document.getElementById("inpModus").value,
+      Alamat_Titik: document.getElementById("inpAlamat").value.trim(),
+      Latitude: document.getElementById("inpLat").value.trim(),
+      Longitude: document.getElementById("inpLng").value.trim(),
+      Nominal_Kerugian: Number(document.getElementById("inpRugi").value || 0),
+      Keterangan: document.getElementById("inpKet").value.trim(),
+      Jumlah_Validasi: 1,
+      Status: "Menunggu Validasi"
+    };
+
+    state.laporan.unshift(payload);
+    saveStateLocal();
+    e.target.reset();
+    document.getElementById("inpLat").value = "-7.9666";
+    document.getElementById("inpLng").value = "112.6326";
+    switchScreen("radar");
+    showToast("Laporan berhasil ditambahkan");
+
+    if (state.gasUrl) {
+      try {
+        await fetch(state.gasUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            kota: payload.Kota,
+            aplikasi: payload.Aplikasi,
+            jenis_modus: payload.Jenis_Modus,
+            alamat_titik: payload.Alamat_Titik,
+            latitude: payload.Latitude,
+            longitude: payload.Longitude,
+            nominal_kerugian: payload.Nominal_Kerugian,
+            keterangan: payload.Keterangan
+          })
+        });
+      } catch (_) {}
+    }
+  });
+
+  document.getElementById("filterPantiKota").addEventListener("change", renderPanti);
+
+  document.getElementById("btnToggleFormPanti").addEventListener("click", () => {
+    document.getElementById("cardFormPanti").classList.toggle("hidden");
+  });
+
+  document.getElementById("formPanti").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const newPanti = {
+      ID: "PNT-" + Date.now().toString().slice(-6),
+      Kota: document.getElementById("pantiKota").value,
+      Nama_Panti: document.getElementById("pantiNama").value.trim(),
+      Alamat: document.getElementById("pantiAlamat").value.trim(),
+      Nomor_WA: document.getElementById("pantiWa").value.trim(),
+      Link_Maps: document.getElementById("pantiMaps").value.trim(),
+      Jam_Operasional: document.getElementById("pantiJam").value.trim() || "07:00 - 20:00 WIB",
+      Status: "Aktif"
+    };
+
+    state.panti.unshift(newPanti);
+    saveStateLocal();
+    e.target.reset();
+    document.getElementById("cardFormPanti").classList.add("hidden");
+    renderPanti();
+    showToast("Panti asuhan baru ditambahkan");
+
+    if (state.gasUrl) {
+      try {
+        await fetch(state.gasUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "tambah_panti",
+            kota: newPanti.Kota,
+            nama_panti: newPanti.Nama_Panti,
+            alamat: newPanti.Alamat,
+            nomor_wa: newPanti.Nomor_WA,
+            link_maps: newPanti.Link_Maps,
+            jam_operasional: newPanti.Jam_Operasional
+          })
+        });
+      } catch (_) {}
+    }
+  });
+
+  document.getElementById("btnSaveSyncGas").addEventListener("click", async () => {
+    state.gasUrl = document.getElementById("gasUrlInput").value.trim();
+    saveStateLocal();
+    updateHeaderSyncBadge();
+    if (state.gasUrl) {
+      await syncFromGas();
+    } else {
+      showToast("URL API dikosongkan (Mode Lokal)");
+    }
+  });
+
+  document.getElementById("btnDownloadHtml").addEventListener("click", downloadCurrentHtml);
+
+  document.getElementById("setWilayahDefault").addEventListener("change", (e) => {
+    state.settings.wilayah = e.target.value;
+    state.activeKota = e.target.value;
+    saveStateLocal();
+    updateHeaderSyncBadge();
+    showToast("Wilayah default diperbarui");
+  });
+
+  document.getElementById("btnOpenOnboarding").addEventListener("click", () => {
+    document.getElementById("onboardWilayah").value = state.settings.wilayah || "Semua Malang Raya";
+    document.getElementById("onboardKecamatan").value = state.settings.kecamatan || "";
+    document.getElementById("driverName").value = state.settings.driverName || "";
+    document.getElementById("driverCode").value = state.settings.driverCode || "";
+    switchScreen("onboarding");
+  });
+
+  document.getElementById("btnResetLocal").addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEYS.laporan);
+    localStorage.removeItem(STORAGE_KEYS.panti);
+    state.laporan = [...SEED_LAPORAN];
+    state.panti = [...SEED_PANTI];
     saveStateLocal();
     renderRadar();
     renderPanti();
-    if (mapInstance) initOrRefreshMap();
-    showToast("Sinkronisasi Google Sheets berhasil");
-   }
-  } catch (err) {
-   showToast("Gagal sinkronisasi, cek izin Web App (Siapa saja)");
-  }
- }
- function downloadCurrentHtml() {
-  const rawHtml = "<!DOCTYPE html> " + document.documentElement.outerHTML;
-  const escapedUrl = (state.gasUrl || "").replace(/"/g, "&quot;");
-  const updatedHtml = rawHtml.replace(/const DEFAULT_GAS_URL = "[^"]*";/, `const DEFAULT_GAS_URL = "${escapedUrl}";`);
-  const blob = new Blob([updatedHtml], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "index.html";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast("File index.html diunduh");
- }
- function applyTheme(isDark) {
-  document.body.classList.toggle("dark", isDark);
-  document.getElementById("btnThemeTop").textContent = isDark ? "☀️" : "🌙";
-  localStorage.setItem(STORAGE_KEYS.theme, isDark ? "dark" : "light");
- }
- // Event listeners
- document.getElementById("btnThemeTop").addEventListener("click", () => {
-  applyTheme(!document.body.classList.contains("dark"));
- });
- document.getElementById("btnSyncTop").addEventListener("click", syncFromGas);
- document.querySelectorAll(".bottom-nav .nav-btn").forEach(btn => {
-  btn.addEventListener("click", () => switchScreen(btn.dataset.tab));
- });
- document.querySelectorAll("#onboardApps .app-pick").forEach(btn => {
-  btn.addEventListener("click", () => btn.classList.toggle("active"));
- });
- document.getElementById("btnMasukRadar").addEventListener("click", () => {
-  const wil = document.getElementById("onboardWilayah").value;
-  const kec = document.getElementById("onboardKecamatan").value;
-  const dName = document.getElementById("driverName").value.trim();
-  const dCode = document.getElementById("driverCode").value.trim();
-  const selectedApps = Array.from(document.querySelectorAll("#onboardApps .app-pick.active")).map(b => b.dataset.app);
-  state.settings = {
-   wilayah: wil,
-   kecamatan: kec,
-   driverName: dName,
-   driverCode: dCode,
-   apps: selectedApps.length ? selectedApps : ["GoFood", "GrabFood", "ShopeeFood"],
-   onboardingDone: true
-  };
-  state.activeKota = wil;
-  if (kec) document.getElementById("searchLaporan").value = kec, state.searchQuery = kec;
-  saveStateLocal();
-  switchScreen("radar");
-  showToast("Pengaturan Malang Raya tersimpan");
- });
- document.getElementById("btnSkipRadar").addEventListener("click", () => {
-  state.activeKota = document.getElementById("onboardWilayah").value || "Semua Malang Raya";
-  switchScreen("radar");
- });
- document.querySelectorAll("#wilayahChips .chip").forEach(chip => {
-  chip.addEventListener("click", () => {
-   document.querySelectorAll("#wilayahChips .chip").forEach(c => c.classList.remove("active"));
-   chip.classList.add("active");
-   state.activeKota = chip.dataset.kota;
-   renderRadar();
+    showToast("Data lokal dikembalikan ke bawaan");
   });
- });
- document.querySelectorAll("#appFilterChips .chip").forEach(chip => {
-  chip.addEventListener("click", () => {
-   document.querySelectorAll("#appFilterChips .chip").forEach(c => c.classList.remove("active"));
-   chip.classList.add("active");
-   state.activeApp = chip.dataset.app;
-   renderRadar();
-  });
- });
- document.getElementById("searchLaporan").addEventListener("input", (e) => {
-  state.searchQuery = e.target.value;
-  renderRadar();
- });
- document.getElementById("btnQuickLapor").addEventListener("click", () => switchScreen("lapor"));
- document.getElementById("btnCenterMalang").addEventListener("click", () => {
-  if (mapInstance) mapInstance.setView([-7.9666, 112.6326], 11);
- });
- document.getElementById("btnUseMyGps").addEventListener("click", () => {
-  if (!navigator.geolocation) {
-   showToast("GPS tidak didukung browser ini");
-   return;
-  }
-  navigator.geolocation.getCurrentPosition(
-   pos => {
-    const lat = Number(pos.coords.latitude.toFixed(5));
-    const lng = Number(pos.coords.longitude.toFixed(5));
-    document.getElementById("inpLat").value = lat;
-    document.getElementById("inpLng").value = lng;
-    document.getElementById("pickedCoordInfo").textContent = `Koordinat GPS Anda: ${lat}, ${lng}`;
-    if (mapInstance) mapInstance.setView([lat, lng], 15);
-    showToast("Lokasi GPS berhasil diambil");
-   },
-   () => showToast("Izinkan akses lokasi GPS di HP Anda")
-  );
- });
- document.getElementById("formLapor").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const nowStr = new Date().toISOString().slice(0, 16).replace("T", " ");
-  const payload = {
-   ID: "RPT-" + Date.now().toString().slice(-6),
-   Waktu: nowStr,
-   Kota: document.getElementById("inpKota").value,
-   Aplikasi: document.getElementById("inpApp").value,
-   Jenis_Modus: document.getElementById("inpModus").value,
-   Alamat_Titik: document.getElementById("inpAlamat").value.trim(),
-   Latitude: document.getElementById("inpLat").value.trim(),
-   Longitude: document.getElementById("inpLng").value.trim(),
-   Nominal_Kerugian: Number(document.getElementById("inpRugi").value || 0),
-   Keterangan: document.getElementById("inpKet").value.trim(),
-   Jumlah_Validasi: 1,
-   Status: "Menunggu Validasi"
-  };
-  state.laporan.unshift(payload);
-  saveStateLocal();
-  e.target.reset();
-  document.getElementById("inpLat").value = "-7.9666";
-  document.getElementById("inpLng").value = "112.6326";
-  switchScreen("radar");
-  showToast("Laporan berhasil ditambahkan");
-  if (state.gasUrl) {
-   try {
-    await fetch(state.gasUrl, {
-     method: "POST",
-     mode: "no-cors",
-     headers: { "Content-Type": "application/json" },
-     body: JSON.stringify({
-      kota: payload.Kota,
-      aplikasi: payload.Aplikasi,
-      jenis_modus: payload.Jenis_Modus,
-      alamat_titik: payload.Alamat_Titik,
-      latitude: payload.Latitude,
-      longitude: payload.Longitude,
-      nominal_kerugian: payload.Nominal_Kerugian,
-      keterangan: payload.Keterangan
-     })
-    });
-   } catch (_) {}
-  }
- });
- document.getElementById("filterPantiKota").addEventListener("change", renderPanti);
- document.getElementById("btnToggleFormPanti").addEventListener("click", () => {
-  document.getElementById("cardFormPanti").classList.toggle("hidden");
- });
- document.getElementById("formPanti").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const newPanti = {
-   ID: "PNT-" + Date.now().toString().slice(-6),
-   Kota: document.getElementById("pantiKota").value,
-   Nama_Panti: document.getElementById("pantiNama").value.trim(),
-   Alamat: document.getElementById("pantiAlamat").value.trim(),
-   Nomor_WA: document.getElementById("pantiWa").value.trim(),
-   Link_Maps: document.getElementById("pantiMaps").value.trim(),
-   Jam_Operasional: document.getElementById("pantiJam").value.trim() || "07:00 - 20:00 WIB",
-   Status: "Aktif"
-  };
-  state.panti.unshift(newPanti);
-  saveStateLocal();
-  e.target.reset();
-  document.getElementById("cardFormPanti").classList.add("hidden");
-  renderPanti();
-  showToast("Panti asuhan baru ditambahkan");
-  if (state.gasUrl) {
-   try {
-    await fetch(state.gasUrl, {
-     method: "POST",
-     mode: "no-cors",
-     headers: { "Content-Type": "application/json" },
-     body: JSON.stringify({
-      action: "tambah_panti",
-      kota: newPanti.Kota,
-      nama_panti: newPanti.Nama_Panti,
-      alamat: newPanti.Alamat,
-      nomor_wa: newPanti.Nomor_WA,
-      link_maps: newPanti.Link_Maps,
-      jam_operasional: newPanti.Jam_Operasional
-     })
-    });
-   } catch (_) {}
-  }
- });
- document.getElementById("btnSaveSyncGas").addEventListener("click", async () => {
-  state.gasUrl = document.getElementById("gasUrlInput").value.trim();
-  saveStateLocal();
+
+  // Init
+  applyTheme(localStorage.getItem(STORAGE_KEYS.theme) === "dark");
+  initRiskChecker();
   updateHeaderSyncBadge();
-  if (state.gasUrl) {
-   await syncFromGas();
+
+  if (state.settings && state.settings.onboardingDone) {
+    state.activeKota = state.settings.wilayah || "Semua Malang Raya";
+    switchScreen("radar");
   } else {
-   showToast("URL API dikosongkan (Mode Lokal)");
+    switchScreen("onboarding");
   }
- });
- document.getElementById("btnDownloadHtml").addEventListener("click", downloadCurrentHtml);
- document.getElementById("setWilayahDefault").addEventListener("change", (e) => {
-  state.settings.wilayah = e.target.value;
-  state.activeKota = e.target.value;
-  saveStateLocal();
-  updateHeaderSyncBadge();
-  showToast("Wilayah default diperbarui");
- });
- document.getElementById("btnOpenOnboarding").addEventListener("click", () => {
-  document.getElementById("onboardWilayah").value = state.settings.wilayah || "Semua Malang Raya";
-  document.getElementById("onboardKecamatan").value = state.settings.kecamatan || "";
-  document.getElementById("driverName").value = state.settings.driverName || "";
-  document.getElementById("driverCode").value = state.settings.driverCode || "";
-  switchScreen("onboarding");
- });
- document.getElementById("btnResetLocal").addEventListener("click", () => {
-  localStorage.removeItem(STORAGE_KEYS.laporan);
-  localStorage.removeItem(STORAGE_KEYS.panti);
-  state.laporan = [...SEED_LAPORAN];
-  state.panti = [...SEED_PANTI];
-  saveStateLocal();
-  renderRadar();
-  renderPanti();
-  showToast("Data lokal dikembalikan ke bawaan");
- });
- // Init
- applyTheme(localStorage.getItem(STORAGE_KEYS.theme) === "dark");
- initRiskChecker();
- updateHeaderSyncBadge();
- if (state.settings && state.settings.onboardingDone) {
-  state.activeKota = state.settings.wilayah || "Semua Malang Raya";
-  switchScreen("radar");
- } else {
-  switchScreen("onboarding");
- }
- if (state.gasUrl) {
-  syncFromGas();
- } </script>
+
+  if (state.gasUrl) {
+    syncFromGas();
+  }
+</script>
 </body>
 </html>
+
