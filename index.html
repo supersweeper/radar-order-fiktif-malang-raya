@@ -1023,7 +1023,7 @@
             }
 
             const savedPanti = localStorage.getItem('rof_panti');
-            if (savedPanti) {
+                        if (savedPanti) {
                 try {
                     const parsedPanti = JSON.parse(savedPanti);
                     if (Array.isArray(parsedPanti) && parsedPanti.length > 0) {
@@ -1033,6 +1033,9 @@
                     state.pantiList = [...DEFAULT_PANTI_LIST];
                 }
             }
+
+            state.pantiList = [];
+            localStorage.removeItem('rof_panti');
         }
 
         function saveReports() {
