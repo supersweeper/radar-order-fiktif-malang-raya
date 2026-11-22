@@ -70,6 +70,7 @@
             background-color: currentColor;
             animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
+    
     </style>
 </head>
 <body class="bg-slate-200 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
@@ -418,100 +419,73 @@
                 <section id="view-report" class="hidden p-4 space-y-4">
                     <div>
                         <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Lapor order fiktif</h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Bagikan info titik & modus agar sesama driver Malang Raya tidak zonk.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Biar dulur driver lain tidak kena zonk di alamat yang sama.</p>
                     </div>
 
                     <form id="report-form" onsubmit="handleReportSubmit(event)" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Aplikasi Ojol *</label>
-                                <select id="rep-app" required class="w-full px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="Gojek">Gojek</option>
-                                    <option value="Grab">Grab</option>
-                                    <option value="ShopeeFood">ShopeeFood</option>
-                                    <option value="Maxim">Maxim</option>
-                                    <option value="inDrive">inDrive</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Wilayah Malang Raya *</label>
-                                <select id="rep-region" onchange="updateReportKecamatanOptions()" required class="w-full px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="Kota Malang">Kota Malang</option>
-                                    <option value="Kabupaten Malang">Kabupaten Malang</option>
-                                    <option value="Kota Batu">Kota Batu</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Kecamatan *</label>
-                                <select id="rep-kecamatan" required class="w-full px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <!-- Populated dynamically -->
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Tingkat Risiko *</label>
-                                <select id="rep-risk" required class="w-full px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="Tinggi">Bahaya Tinggi (Zonk)</option>
-                                    <option value="Sedang">Waspada (Mencurigakan)</option>
-                                </select>
-                            </div>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5" id="rep-app-label">Aplikasi terkait</span>
+                            <div class="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="rep-app-label"><label class="cursor-pointer"><input type="radio" name="rep-app" value="ShopeeFood" class="peer sr-only" checked><span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-slate-950 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">Shopee</span></label><label class="cursor-pointer"><input type="radio" name="rep-app" value="Gojek" class="peer sr-only"><span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-slate-950 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">Gojek</span></label><label class="cursor-pointer"><input type="radio" name="rep-app" value="Grab" class="peer sr-only"><span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-slate-950 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">Grab</span></label><label class="cursor-pointer"><input type="radio" name="rep-app" value="Maxim" class="peer sr-only"><span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-slate-950 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">Maxim</span></label><label class="cursor-pointer"><input type="radio" name="rep-app" value="inDrive" class="peer sr-only"><span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-slate-950 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500">inDrive</span></label><label class="cursor-pointer"><input type="radio" name="rep-app" value="Lainnya" class="peer sr-only"><span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-slate-950 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500"><i class="w-3 h-3 rounded-full bg-slate-400 dark:bg-slate-500 inline-block"></i>Lainnya</span></label></div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Modus *</label>
-                            <select id="rep-service" required class="w-full px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                <option value="Food COD Fiktif">Food COD Fiktif</option>
-                                <option value="Titik Fiktif / Kosong">Titik Fiktif / Kosong</option>
-                                <option value="Minta Top-Up / Pulsa">Minta Top-Up / Pulsa</option>
-                                <option value="Kurir / Paket Fiktif">Kurir / Paket Fiktif</option>
+                            <label for="rep-kecamatan" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Kecamatan *</label>
+                            <select id="rep-kecamatan" required class="w-full px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold"></select>
+                        </div>
+
+                        <div>
+                            <label for="rep-service" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Kategori modus *</label>
+                            <select id="rep-service" required class="w-full px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-semibold">
+                                <option value="Titik Fiktif / Kosong">Alamat palsu / tanah kosong</option>
+                                <option value="Food COD Fiktif">COD makanan fiktif</option>
+                                <option value="Minta Top-Up / Pulsa">Minta top-up / pulsa</option>
+                                <option value="Kurir / Paket Fiktif">Kurir / paket fiktif</option>
                             </select>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat / Patokan Titik *</label>
-                            <input type="text" id="rep-location" required placeholder="Contoh: Jl. Soekarno Hatta depan ruko tutup..." class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        </div>
-
-                        <!-- Pin Koordinat GPS / Mini-Map -->
-                        <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2.5">
-                            <div class="min-w-0">
-                                <div class="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-500"></i>
-                                    Koordinat Titik Kejadian
-                                </div>
-                                <p id="rep-coords-display" class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                                    Otomatis sesuai wilayah (atau ambil GPS / ketuk peta)
-                                </p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button type="button" onclick="getCurrentGPSLocation()" class="py-2 px-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold hover:bg-emerald-500/25 transition flex items-center justify-center gap-1.5">
-                                    <i data-lucide="locate-fixed" class="w-3.5 h-3.5"></i> Ambil Lokasi GPS
-                                </button>
-                                <button type="button" onclick="toggleMiniPickerMap()" class="py-2 px-3 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold hover:bg-amber-500/25 transition flex items-center justify-center gap-1.5">
-                                    <i data-lucide="map" class="w-3.5 h-3.5"></i> Ketuk Mini-Peta
-                                </button>
-                            </div>
-                            <div id="mini-map-wrapper" class="hidden pt-1">
-                                <div id="mini-picker-map" class="w-full h-44 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700"></div>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 text-center">Ketuk titik lokasi di peta mini di atas untuk mengunci koordinat.</p>
-                            </div>
+                            <label for="rep-location" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat atau titik antar fiktif *</label>
+                            <input type="text" id="rep-location" required maxlength="160" autocomplete="off" placeholder="Jl. Tlogomas Gg. Melati (ujung dekat lahan kosong)" class="w-full px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <button type="button" onclick="getCurrentGPSLocation()" class="mt-2.5 py-3 px-3.5 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-sm font-bold hover:bg-emerald-500/25 transition flex items-center justify-center gap-2 w-full">
+                                <i data-lucide="locate-fixed" class="w-4 h-4"></i> Pakai lokasiku sekarang
+                            </button>
+                            <p id="rep-coords-display" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">Opsional. Pakai kalau kamu sedang berada di titik antar, supaya laporan langsung muncul di peta.</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Estimasi Nominal Kerugian (Rp)</label>
-                            <input type="number" id="rep-loss" placeholder="Contoh: 125000 (isi angka saja, 0 jika terhindar)" class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <label for="rep-account" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama akun atau no. WA</label>
+                            <input type="text" id="rep-account" maxlength="60" autocomplete="off" placeholder="r***a / 0812-xxxx-4412" class="w-full px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">Disensor otomatis saat disimpan: hanya huruf awal dan akhir, atau 4 angka awal dan akhir nomor yang tersisa.</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Keterangan Kronologi *</label>
-                            <textarea id="rep-modus" rows="3" required placeholder="Ceritakan singkat: misal order tunai 150rb, titik antar lahan kosong, nomor tidak aktif..." class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                            <label for="rep-loss" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nominal kerugian atau order</label>
+                            <input type="text" id="rep-loss" inputmode="numeric" autocomplete="off" placeholder="Rp 185.000" class="w-full px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+
+                        <div>
+                            <label for="rep-modus" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Kronologi singkat *</label>
+                            <textarea id="rep-modus" rows="4" required maxlength="600" placeholder="Order 4 paket ayam geprek tunai, chat tidak dibalas, ditelepon tidak aktif, sampai titik ternyata lahan kosong." class="w-full px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                        </div>
+
+                        <div>
+                            <span class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Foto bukti (wajib 2 foto)</span>
+                            <input type="file" id="rep-photo-a" accept="image/*" class="sr-only" tabindex="-1" onchange="lpPhotoChosen('a', this)">
+                            <input type="file" id="rep-photo-b" accept="image/*" class="sr-only" tabindex="-1" onchange="lpPhotoChosen('b', this)">
+                            <div class="space-y-2">
+                                <button type="button" id="rep-photo-btn-a" onclick="lpPickPhoto('a')" class="py-3 px-3.5 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-sm font-bold hover:bg-amber-500/20 transition flex items-center justify-center gap-2 w-full">
+                                    <i data-lucide="image-plus" class="w-4 h-4"></i><span>Foto 1: ambil atau pilih dari galeri</span>
+                                </button>
+                                <button type="button" id="rep-photo-btn-b" onclick="lpPickPhoto('b')" class="py-3 px-3.5 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-sm font-bold hover:bg-amber-500/20 transition flex items-center justify-center gap-2 w-full">
+                                    <i data-lucide="image-plus" class="w-4 h-4"></i><span>Foto 2: ambil atau pilih dari galeri</span>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">Contoh: foto 1 screenshot chat atau order, foto 2 titik antar atau lokasi. Tutup nomor HP, nama, dan wajah orang di foto. Foto dikompres otomatis dan dihapus setelah 30 hari. Laporan, alamat, dan titik di peta tetap ada.</p>
                         </div>
 
                         <button type="submit" id="btn-submit-report" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm shadow-lg shadow-rose-600/25 transition active:scale-[0.99] flex items-center justify-center gap-2">
-                            <i data-lucide="send" class="w-4 h-4"></i>
-                            <span>Kirim Laporan ke Radar</span>
+                            <i data-lucide="flag" class="w-4 h-4"></i>
+                            <span>Simpan laporan</span>
                         </button>
                     </form>
                 </section>
@@ -1533,11 +1507,6 @@
                 }
             });
 
-            const repRegionSelect = document.getElementById('rep-region');
-            if (repRegionSelect && state.city !== 'Semua Malang Raya') {
-                repRegionSelect.value = state.city;
-            }
-
             const pantiCitySelect = document.getElementById('panti-city');
             if (pantiCitySelect && state.city !== 'Semua Malang Raya') {
                 pantiCitySelect.value = state.city;
@@ -1990,17 +1959,114 @@
         // 9. REPORT FORM & GPS / MINI-MAP PICKER
         // ==========================================
         function updateReportKecamatanOptions() {
-            const regionSel = document.getElementById('rep-region');
             const kecSel = document.getElementById('rep-kecamatan');
-            if (!regionSel || !kecSel) return;
+            if (!kecSel) return;
+            const prev = kecSel.value;
+            kecSel.innerHTML = Object.keys(KECAMATAN_BY_REGION).map(reg =>
+                `<optgroup label="${reg}">` +
+                KECAMATAN_BY_REGION[reg].map(k => `<option value="${k}">${k}</option>`).join('') +
+                `</optgroup>`
+            ).join('');
+            const all = [].concat(...Object.values(KECAMATAN_BY_REGION));
+            let want = 'Klojen';
+            if (prev && all.includes(prev)) want = prev;
+            else if (state.kecamatan && all.includes(state.kecamatan)) want = state.kecamatan;
+            else if ((KECAMATAN_BY_REGION[state.city] || []).length) want = KECAMATAN_BY_REGION[state.city][0];
+            kecSel.value = want;
+        }
 
-            const reg = regionSel.value;
-            const list = KECAMATAN_BY_REGION[reg] || ALL_POPULAR_KECAMATAN;
-            kecSel.innerHTML = list.map(k => `<option value="${k}">${k}</option>`).join('');
+        // ---- Foto bukti (2 foto wajib, dikompres, disimpan di perangkat, dihapus setelah 30 hari) ----
+        const LP_PHOTO = { a: null, b: null };
+        const LP_PHOTO_KEY = 'rof_photos';
+        const LP_PHOTO_TTL = 30 * 24 * 60 * 60 * 1000;
+        const LP_COORDS_DEFAULT = 'Opsional. Pakai kalau kamu sedang berada di titik antar, supaya laporan langsung muncul di peta.';
 
-            if (state.kecamatan && list.includes(state.kecamatan)) {
-                kecSel.value = state.kecamatan;
+        function lpPickPhoto(slot) {
+            const inp = document.getElementById('rep-photo-' + slot);
+            if (inp) inp.click();
+        }
+
+        function lpCompress(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(1, 960 / Math.max(img.naturalWidth, img.naturalHeight));
+                    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+                    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+                    const c = document.createElement('canvas');
+                    c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    URL.revokeObjectURL(url);
+                    resolve(c.toDataURL('image/jpeg', 0.6));
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('gambar tidak terbaca')); };
+                img.src = url;
+            });
+        }
+
+        async function lpPhotoChosen(slot, input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            try {
+                LP_PHOTO[slot] = await lpCompress(file);
+                lpRenderPhotoBtn(slot);
+            } catch (err) {
+                showToast('Foto tidak bisa dibaca. Coba foto lain.', 'warning');
             }
+            input.value = '';
+        }
+
+        function lpRenderPhotoBtn(slot) {
+            const btn = document.getElementById('rep-photo-btn-' + slot);
+            if (!btn) return;
+            const n = slot === 'a' ? 1 : 2;
+            const data = LP_PHOTO[slot];
+            btn.innerHTML = data
+                ? `<img class="w-7 h-7 rounded-md object-cover" src="${data}" alt="Pratinjau foto ${n}"><span>Foto ${n} siap, ketuk untuk ganti</span>`
+                : `<i data-lucide="image-plus" class="w-4 h-4"></i><span>Foto ${n}: ambil atau pilih dari galeri</span>`;
+            lucide.createIcons();
+        }
+
+        function lpLoadPhotos() {
+            try {
+                const map = JSON.parse(localStorage.getItem(LP_PHOTO_KEY) || '{}');
+                const now = Date.now();
+                let changed = false;
+                Object.keys(map).forEach(k => {
+                    if (!map[k] || now - map[k].t > LP_PHOTO_TTL) { delete map[k]; changed = true; }
+                });
+                if (changed) localStorage.setItem(LP_PHOTO_KEY, JSON.stringify(map));
+                return map;
+            } catch (e) { return {}; }
+        }
+
+        function lpSavePhotos(id, a, b) {
+            const map = lpLoadPhotos();
+            map[id] = { t: Date.now(), a, b };
+            for (;;) {
+                try { localStorage.setItem(LP_PHOTO_KEY, JSON.stringify(map)); return true; }
+                catch (e) {
+                    const older = Object.keys(map).filter(k => k !== id).sort((x, y) => map[x].t - map[y].t);
+                    if (!older.length) return false;
+                    delete map[older[0]];
+                }
+            }
+        }
+        lpLoadPhotos();
+
+        // Sensor nama akun / nomor WA sebelum disimpan
+        function lpMaskPart(raw) {
+            const v = raw.trim();
+            if (!v) return '';
+            const digits = v.replace(/\D/g, '');
+            if (digits.length >= 8) return digits.slice(0, 4) + '-xxxx-' + digits.slice(-4);
+            const chars = Array.from(v);
+            if (chars.length <= 2) return '***';
+            return chars[0] + '***' + chars[chars.length - 1];
+        }
+        function lpMaskAccount(raw) {
+            return String(raw || '').split('/').map(lpMaskPart).filter(Boolean).join(' / ');
         }
 
         function getCurrentGPSLocation() {
@@ -2015,79 +2081,43 @@
                     const lat = Number(pos.coords.latitude.toFixed(6));
                     const lng = Number(pos.coords.longitude.toFixed(6));
                     state.pendingMapCoords = { lat, lng };
-                    display.textContent = `GPS Terkunci: ${lat}, ${lng}`;
+                    display.textContent = `Titik terkunci: ${lat}, ${lng}`;
                     showToast('Lokasi GPS berhasil diambil!', 'success');
                 },
                 () => {
-                    display.textContent = 'Gagal ambil GPS. Gunakan "Ketuk Mini-Peta" atau isi alamat jelas.';
+                    display.textContent = 'Gagal ambil GPS. Isi alamat selengkapnya, atau pilih titik lewat halaman Peta.';
                     showToast('Izin lokasi ditolak atau GPS tidak aktif.', 'warning');
                 },
                 { enableHighAccuracy: true, timeout: 8000 }
             );
         }
 
-        function toggleMiniPickerMap() {
-            const wrapper = document.getElementById('mini-map-wrapper');
-            wrapper.classList.toggle('hidden');
-            if (!wrapper.classList.contains('hidden')) {
-                setTimeout(() => {
-                    const regionVal = document.getElementById('rep-region').value || 'Kota Malang';
-                    const regMeta = REGION_COORDS[regionVal] || REGION_COORDS['Kota Malang'];
-                    const initCenter = state.pendingMapCoords
-                        ? [state.pendingMapCoords.lat, state.pendingMapCoords.lng]
-                        : regMeta.center;
-
-                    if (!state.miniMapInstance) {
-                        state.miniMapInstance = L.map('mini-picker-map').setView(initCenter, regMeta.zoom);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; OpenStreetMap'
-                        }).addTo(state.miniMapInstance);
-
-                        state.miniMapInstance.on('click', (e) => {
-                            const lat = Number(e.latlng.lat.toFixed(6));
-                            const lng = Number(e.latlng.lng.toFixed(6));
-                            state.pendingMapCoords = { lat, lng };
-                            document.getElementById('rep-coords-display').textContent = `Pin Peta: ${lat}, ${lng}`;
-                            if (state.miniPinMarker) {
-                                state.miniPinMarker.setLatLng([lat, lng]);
-                            } else {
-                                state.miniPinMarker = L.circleMarker([lat, lng], {
-                                    radius: 9,
-                                    color: '#ffffff',
-                                    weight: 2,
-                                    fillColor: '#e11d48',
-                                    fillOpacity: 0.95
-                                }).addTo(state.miniMapInstance);
-                            }
-                            showToast(`Koordinat dikunci: ${lat}, ${lng}`, 'info');
-                        });
-                    } else {
-                        state.miniMapInstance.setView(initCenter, regMeta.zoom);
-                        state.miniMapInstance.invalidateSize();
-                    }
-                }, 100);
-            }
-        }
-
         async function handleReportSubmit(e) {
             e.preventDefault();
+
+            if (!LP_PHOTO.a || !LP_PHOTO.b) {
+                showToast('Foto bukti wajib 2 foto.', 'warning');
+                return;
+            }
 
             const submitBtn = document.getElementById('btn-submit-report');
             const originalText = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span>Mengirim laporan...</span>`;
+            submitBtn.innerHTML = `<span>Menyimpan laporan...</span>`;
 
-            const app = document.getElementById('rep-app').value;
-            const city = document.getElementById('rep-region').value;
+            const appEl = document.querySelector('input[name="rep-app"]:checked');
+            const app = appEl ? appEl.value : 'Lainnya';
             const kecamatan = document.getElementById('rep-kecamatan').value;
+            const city = Object.keys(KECAMATAN_BY_REGION).find(r => KECAMATAN_BY_REGION[r].includes(kecamatan)) || 'Kota Malang';
             const service = document.getElementById('rep-service').value;
-            const risk = document.getElementById('rep-risk').value;
             const location = document.getElementById('rep-location').value.trim();
+            const account = lpMaskAccount(document.getElementById('rep-account').value);
             const rawLoss = document.getElementById('rep-loss').value.trim();
             const modus = document.getElementById('rep-modus').value.trim();
 
             const lossNum = rawLoss ? Number(rawLoss.replace(/[^0-9]/g, '')) : 0;
             const lossFormatted = lossNum > 0 ? 'Rp ' + lossNum.toLocaleString('id-ID') : '';
+            const risk = (lossNum > 0 || service === 'Minta Top-Up / Pulsa') ? 'Tinggi' : 'Sedang';
 
             const regCenter = (REGION_COORDS[city] || REGION_COORDS['Kota Malang']).center;
             const jitterLat = () => regCenter[0] + (Math.random() - 0.5) * 0.03;
@@ -2105,6 +2135,7 @@
                 risk,
                 location,
                 modus,
+                account,
                 loss: lossFormatted,
                 lat,
                 lng,
@@ -2115,6 +2146,8 @@
 
             state.reports.unshift(newReport);
             saveReports();
+
+            const photosOk = lpSavePhotos(newReport.id, LP_PHOTO.a, LP_PHOTO.b);
 
             if (state.gasUrl) {
                 try {
@@ -2129,6 +2162,7 @@
                         longitude: lng,
                         nominal_kerugian: lossNum,
                         keterangan: modus,
+                        akun_tersensor: account,
                         driver_nama: state.driverName || '',
                         driver_id: state.driverId || ''
                     };
@@ -2147,14 +2181,15 @@
                     showToast('Tersimpan di perangkat (offline). Akan sinkron saat online.', 'warning');
                 }
             } else {
-                showToast('Laporan berhasil dikirim ke radar lokal!', 'success');
+                showToast(photosOk ? 'Laporan berhasil disimpan ke radar lokal!' : 'Laporan tersimpan, tapi foto tidak muat di penyimpanan perangkat.', photosOk ? 'success' : 'warning');
             }
 
             document.getElementById('report-form').reset();
+            LP_PHOTO.a = null; LP_PHOTO.b = null;
+            lpRenderPhotoBtn('a'); lpRenderPhotoBtn('b');
             updateReportKecamatanOptions();
             state.pendingMapCoords = null;
-            document.getElementById('rep-coords-display').textContent = 'Otomatis sesuai wilayah (atau ambil GPS / ketuk peta)';
-            document.getElementById('mini-map-wrapper').classList.add('hidden');
+            document.getElementById('rep-coords-display').textContent = LP_COORDS_DEFAULT;
 
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
