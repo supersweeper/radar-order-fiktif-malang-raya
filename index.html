@@ -913,30 +913,21 @@
         };
 
         function loadReports() {
-    state.reports = [];
-    localStorage.removeItem('rof_reports');
+    try {
+        const savedReports = localStorage.getItem('rof_reports');
+        state.reports = savedReports ? JSON.parse(savedReports) : [...DEFAULT_REPORTS];
+    } catch (e) {
+        state.reports = [...DEFAULT_REPORTS];
+    }
 
-    state.pantiList = [];
-    localStorage.removeItem('rof_panti');
+    try {
+        const savedPanti = localStorage.getItem('rof_panti');
+        state.pantiList = savedPanti ? JSON.parse(savedPanti) : [...DEFAULT_PANTI_LIST];
+    } catch (e) {
+        state.pantiList = [...DEFAULT_PANTI_LIST];
+    }
 }
-                saveReports();
-            }
 
-            const savedPanti = localStorage.getItem('rof_panti');
-                        if (savedPanti) {
-                try {
-                    const parsedPanti = JSON.parse(savedPanti);
-                    if (Array.isArray(parsedPanti) && parsedPanti.length > 0) {
-                        state.pantiList = parsedPanti;
-                    }
-                } catch (e) {
-                    state.pantiList = [...DEFAULT_PANTI_LIST];
-                }
-            }
-
-            state.pantiList = [];
-            localStorage.removeItem('rof_panti');
-        }
 
         function saveReports() {
             localStorage.setItem('rof_reports', JSON.stringify(state.reports));
