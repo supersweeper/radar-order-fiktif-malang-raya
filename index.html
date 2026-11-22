@@ -873,104 +873,7 @@
             }
         ];
 
-        const DEFAULT_REPORTS = [
-            {
-                id: 'RPT-1001',
-                city: 'Kota Malang',
-                kecamatan: 'Lowokwaru',
-                app: 'ShopeeFood',
-                service: 'Food COD Fiktif',
-                risk: 'Tinggi',
-                location: 'Jl. Soekarno Hatta (Depan Ruko Tutup Dekat Jembatan)',
-                modus: 'Order ayam geprek 6 porsi tunai Rp 158.000. Pas sampai titik ternyata ruko tutup permanen, nomor HP tidak aktif.',
-                loss: 'Rp 158.000',
-                lat: -7.9465,
-                lng: 112.6158,
-                time: '20 menit lalu',
-                confirmations: 14,
-                status: 'Terverifikasi'
-            },
-            {
-                id: 'RPT-1002',
-                city: 'Kota Malang',
-                kecamatan: 'Lowokwaru',
-                app: 'Gojek',
-                service: 'Titik Fiktif / Kosong',
-                risk: 'Tinggi',
-                location: 'Area Belakang Kampus / Lahan Kosong Dinoyo',
-                modus: 'Akun baru, titik antar diarahkan ke kebun kosong ujung gang buntu. Pemesan minta resto buru-buru masak.',
-                loss: 'Rp 125.000',
-                lat: -7.9382,
-                lng: 112.6085,
-                time: '55 menit lalu',
-                confirmations: 11,
-                status: 'Terverifikasi'
-            },
-            {
-                id: 'RPT-1003',
-                city: 'Kabupaten Malang',
-                kecamatan: 'Singosari',
-                app: 'Grab',
-                service: 'Food COD Fiktif',
-                risk: 'Tinggi',
-                location: 'Jl. Raya Singosari (Pinggir Lahan Kosong Dekat Pabrik)',
-                modus: 'Order bebek goreng & es teh 5 porsi tunai Rp 165.000. Titik antar di depan gudang tua tutup, WA centang satu.',
-                loss: 'Rp 165.000',
-                lat: -7.8924,
-                lng: 112.6658,
-                time: '1 jam lalu',
-                confirmations: 18,
-                status: 'Terverifikasi'
-            },
-            {
-                id: 'RPT-1004',
-                city: 'Kabupaten Malang',
-                kecamatan: 'Kepanjen',
-                app: 'Maxim',
-                service: 'Kurir / Paket Fiktif',
-                risk: 'Sedang',
-                location: 'Jl. Ahmad Yani Kepanjen (Area Persawahan Sepi)',
-                modus: 'Minta talangin dulu paket COD fiktif Rp 95.000 sebelum barang diambil, alamat penerima tidak dikenal warga.',
-                loss: 'Rp 95.000',
-                lat: -8.1306,
-                lng: 112.5724,
-                time: '2 jam lalu',
-                confirmations: 9,
-                status: 'Terverifikasi'
-            },
-            {
-                id: 'RPT-1005',
-                city: 'Kota Batu',
-                kecamatan: 'Junrejo',
-                app: 'inDrive',
-                service: 'Titik Fiktif / Kosong',
-                risk: 'Tinggi',
-                location: 'Jl. Oro-Oro Ombo Batu (Villa Kosong Tanpa Penjaga)',
-                modus: 'Order bakso & lalapan tunai Rp 155.000 atas nama tamu villa. Dicek ke penjaga gerbang, villa sedang kosong.',
-                loss: 'Rp 155.000',
-                lat: -7.8891,
-                lng: 112.5365,
-                time: '3 jam lalu',
-                confirmations: 21,
-                status: 'Terverifikasi'
-            },
-            {
-                id: 'RPT-1006',
-                city: 'Kabupaten Malang',
-                kecamatan: 'Dau',
-                app: 'Gojek',
-                service: 'Minta Top-Up / Pulsa',
-                risk: 'Sedang',
-                location: 'Jl. Raya Mulyoagung Dau (Patokan Tiang Listrik)',
-                modus: 'Pemesan telepon ngaku buru-buru minta isikan top-up DANA Rp 200rb dulu sebelum driver sampai titik.',
-                loss: 'Rp 0 (Terhindar)',
-                lat: -7.9255,
-                lng: 112.5852,
-                time: '4 jam lalu',
-                confirmations: 15,
-                status: 'Terverifikasi'
-            }
-        ];
+        const DEFAULT_REPORTS = [];
 
         const DEFAULT_PANTI_LIST = [];
 
@@ -1010,15 +913,12 @@
         };
 
         function loadReports() {
-            const saved = localStorage.getItem('rof_reports');
-            if (saved) {
-                try {
-                    state.reports = JSON.parse(saved);
-                } catch (e) {
-                    state.reports = [...DEFAULT_REPORTS];
-                }
-            } else {
-                state.reports = [...DEFAULT_REPORTS];
+    state.reports = [];
+    localStorage.removeItem('rof_reports');
+
+    state.pantiList = [];
+    localStorage.removeItem('rof_panti');
+}
                 saveReports();
             }
 
