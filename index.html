@@ -6,7 +6,7 @@
     <title>Radar Order Fiktif Malang Raya — Cek Dulu Sebelum Jalan</title>
 
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -33,7 +33,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.468.0"></script>
+
+    <!-- Konfigurasi publik (URL + anon key Supabase). JANGAN isi service_role. -->
+    <script src="config.js"></script>
 
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -449,7 +452,7 @@
                             <button type="button" onclick="getCurrentGPSLocation()" class="mt-2.5 py-3 px-3.5 rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-sm font-bold hover:bg-emerald-500/25 transition flex items-center justify-center gap-2 w-full">
                                 <i data-lucide="locate-fixed" class="w-4 h-4"></i> Pakai lokasiku sekarang
                             </button>
-                            <p id="rep-coords-display" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">Opsional. Pakai kalau kamu sedang berada di titik antar, supaya laporan langsung muncul di peta.</p>
+                            <p id="rep-coords-display" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">Opsional. Pakai kalau kamu sedang berada di titik antar. Tanpa titik, laporan tidak ditampilkan di peta.</p>
                         </div>
 
                         <div>
@@ -885,6 +888,13 @@
             return 'Semua Malang Raya';
         }
 
+        // SRS FR-02 / BR-02: publik hanya boleh melihat laporan Verified.
+        // Fail-safe: status kosong atau tidak dikenal dianggap BELUM publik.
+        function isPublicReport(r) {
+            const s = String((r && r.status) || '').trim().toLowerCase();
+            return s === 'terverifikasi' || s === 'verified';
+        }
+
         // ==========================================
         // 2. STATE & LOCAL STORAGE
         // ==========================================
@@ -1180,7 +1190,8 @@
                                     lng: row.Longitude ? Number(row.Longitude) : null,
                                     time: formatRelativeTime(row.Waktu),
                                     confirmations: Number(row.Jumlah_Validasi) || 1,
-                                    status: String(row.Status || 'Terverifikasi')
+                                    // Fail-safe: baris tanpa status tidak dianggap terverifikasi.
+                                    status: String(row.Status || 'Menunggu Validasi')
                                 };
                             })
                             .reverse();
@@ -1509,6 +1520,7 @@
         function getFilteredReports() {
             const query = (document.getElementById('search-reports')?.value || '').toLowerCase().trim();
             return state.reports.filter(r => {
+                if (!isPublicReport(r)) return false;
                 const matchCity = state.city === 'Semua Malang Raya' ||
                     normalizeMalangRegion(r.city).toLowerCase() === state.city.toLowerCase();
                 const matchKec = !state.kecamatan ||
@@ -1528,8 +1540,10 @@
 
         function updateStats() {
             const cityReports = state.reports.filter(r =>
-                state.city === 'Semua Malang Raya' ||
-                normalizeMalangRegion(r.city).toLowerCase() === state.city.toLowerCase()
+                isPublicReport(r) && (
+                    state.city === 'Semua Malang Raya' ||
+                    normalizeMalangRegion(r.city).toLowerCase() === state.city.toLowerCase()
+                )
             );
             const highRiskCount = cityReports.filter(r => r.risk === 'Tinggi').length;
             const totalValidations = cityReports.reduce((acc, r) => acc + (Number(r.confirmations) || 1), 0);
@@ -1568,7 +1582,6 @@
 
             container.innerHTML = filtered.map(report => {
                 const isHigh = report.risk === 'Tinggi';
-                const isConfirmed = state.confirmedIds.has(report.id);
                 const areaText = report.kecamatan
                     ? `${report.city} • ${report.kecamatan}`
                     : report.city;
@@ -1618,14 +1631,10 @@
                                     </button>
                                 ` : ''}
 
-                                <button type="button" onclick="confirmReport('${report.id}')" ${isConfirmed ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition ${
-                                    isConfirmed
-                                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 cursor-default'
-                                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm active:scale-95'
-                                }">
+                                <span class="px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                                     <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-                                    <span>${isConfirmed ? 'Valid' : 'Valid'} (${report.confirmations})</span>
-                                </button>
+                                    <span>${report.confirmations} konfirmasi</span>
+                                </span>
                             </div>
                         </div>
                     </article>
@@ -1635,39 +1644,8 @@
             lucide.createIcons();
         }
 
-        async function confirmReport(reportId) {
-            if (state.confirmedIds.has(reportId)) return;
-
-            const report = state.reports.find(r => r.id === reportId);
-            if (!report) return;
-
-            report.confirmations = (Number(report.confirmations) || 1) + 1;
-            state.confirmedIds.add(reportId);
-
-            saveReports();
-            localStorage.setItem('rof_confirmed', JSON.stringify([...state.confirmedIds]));
-
-            updateStats();
-            renderReportsFeed();
-            showToast('Validasi laporan (+1) berhasil dicatat!', 'success');
-
-            if (state.gasUrl) {
-                try {
-                    await fetch(state.gasUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            action: 'validasi',
-                            id: reportId,
-                            driver_id: state.driverId || ''
-                        })
-                    });
-                } catch (err) {
-                    console.warn('Gagal kirim validasi ke GAS:', err);
-                }
-            }
-        }
+        // confirmReport() dihapus: validasi anonim tanpa login mudah di-spam.
+        // Konfirmasi akan dikembalikan lewat akun terautentikasi (satu akun satu suara) pada Fase 1+.
 
         // ==========================================
         // 8. RISK CHECKER & ANTI-FIKTIF TEMPLATES
@@ -1840,7 +1818,7 @@
         const LP_PHOTO = { a: null, b: null };
         const LP_PHOTO_KEY = 'rof_photos';
         const LP_PHOTO_TTL = 30 * 24 * 60 * 60 * 1000;
-        const LP_COORDS_DEFAULT = 'Opsional. Pakai kalau kamu sedang berada di titik antar, supaya laporan langsung muncul di peta.';
+        const LP_COORDS_DEFAULT = 'Opsional. Pakai kalau kamu sedang berada di titik antar. Tanpa titik, laporan tidak ditampilkan di peta.';
 
         function lpPickPhoto(slot) {
             const inp = document.getElementById('rep-photo-' + slot);
@@ -1980,12 +1958,9 @@
             const lossFormatted = lossNum > 0 ? 'Rp ' + lossNum.toLocaleString('id-ID') : '';
             const risk = (lossNum > 0 || service === 'Minta Top-Up / Pulsa') ? 'Tinggi' : 'Sedang';
 
-            const regCenter = (REGION_COORDS[city] || REGION_COORDS['Kota Malang']).center;
-            const jitterLat = () => regCenter[0] + (Math.random() - 0.5) * 0.03;
-            const jitterLng = () => regCenter[1] + (Math.random() - 0.5) * 0.03;
-
-            const lat = state.pendingMapCoords ? state.pendingMapCoords.lat : Number(jitterLat().toFixed(6));
-            const lng = state.pendingMapCoords ? state.pendingMapCoords.lng : Number(jitterLng().toFixed(6));
+            // Tanpa GPS/pin: koordinat dikosongkan (tidak lagi diisi acak), laporan tidak muncul di peta.
+            const lat = state.pendingMapCoords ? state.pendingMapCoords.lat : null;
+            const lng = state.pendingMapCoords ? state.pendingMapCoords.lng : null;
 
             const newReport = {
                 id: 'RPT-' + Math.floor(1000 + Math.random() * 9000),
@@ -2035,14 +2010,14 @@
                         body: JSON.stringify(payload)
                     });
 
-                    showToast('Laporan terkirim ke Google Sheets & Radar Malang Raya!', 'success');
+                    showToast('Laporan terkirim dan menunggu verifikasi sebelum tampil publik.', 'success');
                     setTimeout(() => syncFromDatabase(false), 1800);
                 } catch (err) {
                     console.warn('POST ke GAS gagal:', err);
                     showToast('Tersimpan di perangkat (offline). Akan sinkron saat online.', 'warning');
                 }
             } else {
-                showToast(photosOk ? 'Laporan berhasil disimpan ke radar lokal!' : 'Laporan tersimpan, tapi foto tidak muat di penyimpanan perangkat.', photosOk ? 'success' : 'warning');
+                showToast(photosOk ? 'Laporan tersimpan di perangkat dan belum tampil publik sampai diverifikasi.' : 'Laporan tersimpan, tapi foto tidak muat di penyimpanan perangkat.', photosOk ? 'success' : 'warning');
             }
 
             document.getElementById('report-form').reset();
@@ -2118,6 +2093,7 @@
             state.markersLayer.clearLayers();
 
             const reportsToShow = state.reports.filter(r => {
+                if (!isPublicReport(r)) return false;
                 if (!r.lat || !r.lng) return false;
                 return state.city === 'Semua Malang Raya' ||
                     normalizeMalangRegion(r.city).toLowerCase() === state.city.toLowerCase();
