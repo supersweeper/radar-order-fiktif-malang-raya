@@ -267,18 +267,14 @@
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-2 text-center bg-slate-950/55 rounded-2xl p-3 border border-white/5">
+                        <div class="grid grid-cols-2 gap-2 text-center bg-slate-950/55 rounded-2xl p-3 border border-white/5">
                             <div>
                                 <div id="stat-total-reports" class="text-xl font-extrabold text-white">0</div>
                                 <div class="text-[11px] text-slate-400 font-medium mt-0.5">Total Laporan</div>
                             </div>
-                            <div class="border-x border-slate-800">
+                            <div class="border-l border-slate-800">
                                 <div id="stat-high-risk" class="text-xl font-extrabold text-rose-400">0</div>
                                 <div class="text-[11px] text-slate-400 font-medium mt-0.5">Titik Rawan</div>
-                            </div>
-                            <div>
-                                <div id="stat-validated" class="text-xl font-extrabold text-emerald-400">0</div>
-                                <div class="text-[11px] text-slate-400 font-medium mt-0.5">Tervalidasi</div>
                             </div>
                         </div>
                     </div>
@@ -1189,7 +1185,6 @@
                                     lat: row.Latitude ? Number(row.Latitude) : null,
                                     lng: row.Longitude ? Number(row.Longitude) : null,
                                     time: formatRelativeTime(row.Waktu),
-                                    confirmations: Number(row.Jumlah_Validasi) || 1,
                                     // Fail-safe: baris tanpa status tidak dianggap terverifikasi.
                                     status: String(row.Status || 'Menunggu Validasi')
                                 };
@@ -1546,11 +1541,9 @@
                 )
             );
             const highRiskCount = cityReports.filter(r => r.risk === 'Tinggi').length;
-            const totalValidations = cityReports.reduce((acc, r) => acc + (Number(r.confirmations) || 1), 0);
 
             document.getElementById('stat-total-reports').textContent = cityReports.length;
             document.getElementById('stat-high-risk').textContent = highRiskCount;
-            document.getElementById('stat-validated').textContent = totalValidations;
         }
 
         function getAppBadgeStyle(app) {
@@ -1631,10 +1624,6 @@
                                     </button>
                                 ` : ''}
 
-                                <span class="px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-                                    <span>${report.confirmations} konfirmasi</span>
-                                </span>
                             </div>
                         </div>
                     </article>
@@ -1645,7 +1634,7 @@
         }
 
         // confirmReport() dihapus: validasi anonim tanpa login mudah di-spam.
-        // Konfirmasi akan dikembalikan lewat akun terautentikasi (satu akun satu suara) pada Fase 1+.
+        // Angka konfirmasi lama (Jumlah_Validasi) tidak lagi dipetakan atau ditampilkan.
 
         // ==========================================
         // 8. RISK CHECKER & ANTI-FIKTIF TEMPLATES
@@ -1976,7 +1965,6 @@
                 lat,
                 lng,
                 time: 'Baru saja',
-                confirmations: 1,
                 status: 'Menunggu Validasi'
             };
 
@@ -2120,9 +2108,8 @@
                         <div class="text-xs font-extrabold leading-tight pt-0.5">${escapeHtml(r.location)}</div>
                         <div class="text-[11px] text-slate-600">${escapeHtml(r.service)}</div>
                         <p class="text-[11px] text-slate-700 leading-snug">${escapeHtml(r.modus)}</p>
-                        <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
+                        <div class="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
                             <span>${escapeHtml(r.kecamatan || r.city)}</span>
-                            <span>${r.confirmations} driver validasi</span>
                         </div>
                     </div>
                 `;
