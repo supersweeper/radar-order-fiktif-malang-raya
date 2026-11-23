@@ -1,3 +1,8 @@
+-- DEPRECATED (SRS v0.1): skema awal, TIDAK sesuai SRS dan membolehkan insert anonim
+-- (bertentangan dengan BR-03). Jangan dijalankan untuk produksi baru.
+-- Pengganti: supabase/migrations/ (bertahap, lihat ANALISIS_GAP_SRS_v0.1.md).
+-- Dipertahankan sementara sebagai referensi sampai migrasi Fase 1-2 selesai.
+
 -- Jalankan di Supabase SQL Editor.
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
