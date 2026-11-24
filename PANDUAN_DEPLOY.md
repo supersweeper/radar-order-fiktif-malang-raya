@@ -21,6 +21,20 @@ window.APP_CONFIG = { SUPABASE_URL: "https://xxxx.supabase.co", SUPABASE_ANON_KE
 Jalankan file di `supabase/migrations/` **berurutan** lewat SQL Editor atau `supabase db push`.
 `supabase_schema.sql` lama sudah *deprecated*; jangan dijalankan untuk proyek baru.
 
+Status: `0001` (enum) dan `0002` (profil, peran, audit log). Tabel laporan, bukti, forum, sanksi menyusul pada tahap berikutnya (lihat `docs/RANCANGAN_DB_FASE_1.md`).
+
+**Jika proyek Anda pernah menjalankan `supabase_schema.sql` lama:** `0002` akan berhenti dengan pesan jelas bila menemukan tabel `public.reports` lama, tanpa mengubah data apa pun. Ekspor datanya lalu ganti nama tabel lama sebelum melanjutkan.
+
+**Admin Utama pertama:** daftarkan akun biasa, verifikasi emailnya, lalu jalankan `supabase/bootstrap_admin.example.sql` (dengan UUID akun itu) sekali di SQL Editor. Penunjukan peran berikutnya lewat `public.admin_set_role()`.
+
+**Rahasia:** `service_role` key tidak boleh ada di repo atau frontend. Rantai hash audit (`public.verify_audit_chain()`) hanya *mendeteksi* perubahan; simpan `head_hash`-nya secara berkala di tempat di luar database.
+
+### Menjalankan pengujian database (lokal)
+```bash
+bash supabase/tests/run.sh
+```
+Membuat klaster PostgreSQL sementara (butuh `initdb`, `pg_ctl`, `psql`, `pgbench`), memasang stub Supabase, menjalankan migrasi dua kali, semua tes, uji guard skema lama, dan uji konkurensi audit. **Tidak menyentuh project Supabase Anda.** Pengujian ini tidak menggantikan uji asap di Supabase asli (Auth, Storage, PostgREST).
+
 ## Status saat ini (Fase 0)
 Frontend belum terhubung ke Supabase. Mode lokal (LocalStorage) dan Google Apps Script masih berjalan, dengan perubahan:
 - Hanya laporan berstatus **Terverifikasi** yang tampil di feed, statistik, dan peta.
