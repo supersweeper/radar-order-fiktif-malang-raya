@@ -1,0 +1,14 @@
+{
+  "name": "Radar Order Fiktif Malang Raya",
+  "short_name": "Radar Fiktif",
+  "description": "Radar komunitas driver untuk memantau laporan order fiktif di Malang Raya.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
