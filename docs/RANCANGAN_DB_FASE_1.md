@@ -250,3 +250,11 @@ Integrasi frontend ke Supabase, UI login/laporan, Edge Function (penetapan `bann
 - Daftar nilai `finding_type` (evidence_quality, consistency, location, timeline, other), `assessment` (supports, inconclusive, contradicts), dan `basis` duplikasi (location, time, story, evidence) adalah usulan; dasar `location` saja ditolak (BR-08).
 - Keberatan: siapa pun yang login dengan email terverifikasi dapat mengajukan atas laporan Verified (satu terbuka per pengguna per laporan). Verifier mencatat pemeriksaan; moderator memutuskan: `reject_objection`, `reopen` (Verified -> Under Review) atau `reject_report` (Verified -> Rejected).
 - Pelapor tidak melihat keberatan pihak lain atas laporannya.
+
+### Asumsi Tahap 5 (forum keputusan)
+
+- Satu forum aktif (open/tied) per laporan. Moderator atau Admin Utama membuka forum dan menambah peserta (petugas aktif, tanpa konflik atas laporan itu).
+- Suara disimpan final. Pilihan suara tersembunyi dari semua orang selain pemiliknya sampai forum tidak lagi open, termasuk dari Admin Utama, `service_role`, dan log audit (audit suara hanya mencatat siapa yang memilih, bukan pilihannya).
+- Forum menutup otomatis setelah semua peserta berhak (tanpa konflik) memilih atau abstain. Peserta yang menyatakan konflik sesudah ditambahkan tidak dihitung; moderator/admin dapat menutup dengan `close_forum` bila semua peserta berhak sudah memilih.
+- Suara seri (termasuk 0-0 karena semua abstain) membuat forum berstatus `tied`; hanya Admin Utama yang memutus lewat `resolve_tie` dengan risalah wajib. Siapa pemutus seri adalah asumsi saya (matriks akses tidak eksplisit).
+- Hasil forum bersifat rujukan: `decide_report(..., p_forum_id)` menolak keputusan yang berlawanan dengan hasil forum, tetapi forum tidak wajib.
