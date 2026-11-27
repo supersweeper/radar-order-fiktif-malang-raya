@@ -32,6 +32,16 @@ begin
   return v;
 end $$;
 
+
+-- Bukti EV-01 (wajib sejak Tahap 3) dipasang langsung sebagai pemilik DB untuk fixture.
+create or replace function t.ev(p_report uuid) returns void language plpgsql security definer as $$
+declare e uuid;
+begin
+  insert into public.evidences (report_id, evidence_type) values (p_report, 'EV-01') returning id into e;
+  insert into public.evidence_versions (evidence_id, version_number, uploaded_by, private_file_path, mime_type, size_bytes, sha256)
+  select e, 1, user_id, p_report::text || '/ev01.png', 'image/png', 1000, repeat('a', 64) from public.reports where id = p_report;
+end $$;
+
 -- Membuat laporan lengkap berstatus tertentu lewat jalur impor (GUC mesin), hanya untuk fixture.
 create or replace function t.mk_status(p_status text, p_user uuid) returns uuid
 language plpgsql as $$
@@ -170,6 +180,7 @@ values ('Kota Malang', 'Klojen', 'Dekat stasiun', 'Order fiktif',
         'Pesanan dari alamat yang tidak ada dan pelanggan tidak menjawab telepon.', now() - interval '2 hours')
 returning id as api_id \gset
 select t.save('api', :'api_id'::uuid);
+select t.ev(:'api_id'::uuid);
 select t.ok((select count(*) from public.reports where id = t.rid('api') and status = 'draft' and user_id = t.ua()) = 1,
             'user A membuat draf lewat API (user_id default = auth.uid())');
 select t.ok(t.count('select 1 from public.report_histories where report_id = t.rid(''api'') and action = ''created''') = 1,
@@ -231,6 +242,7 @@ select t.throws($q$select public.cancel_report(gen_random_uuid(), 'x')$q$, '4250
 select t.logout();
 select t.mk('vis_draft', t.ua());
 select t.mk('vis_pending', t.ua());
+select t.ev(t.rid('vis_pending'));
 select t.login(t.ua());
 select public.submit_report(t.rid('vis_pending'));
 
@@ -255,6 +267,7 @@ select t.throws($q$update public.reports set status = 'verified' where id = t.ri
 select t.logout();
 select t.mk_status('needs_revision', t.ua()) as nr \gset
 select t.save('rev', :'nr'::uuid);
+select t.ev(:'nr'::uuid);
 select t.login(t.ua());
 select t.ok(t.affected($q$update public.reports set story = 'Kronologi diperbaiki: pelanggan menolak menjawab tiga kali panggilan.' where id = t.rid('rev')$q$) = 1,
             'pemilik dapat memperbaiki isi saat Needs Revision');
