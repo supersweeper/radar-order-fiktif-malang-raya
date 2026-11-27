@@ -236,3 +236,17 @@ Setiap butir punya **default yang akan saya pakai** bila Anda cukup menjawab "se
 
 ## 11. Di luar cakupan Fase 1
 Integrasi frontend ke Supabase, UI login/laporan, Edge Function (penetapan `banned_until`, penerbitan signed URL, pembersihan retensi), migrasi data Google Sheets, direktori panti, kebijakan retensi bukti (SRS Bab VIII, belum diputuskan).
+
+
+---
+
+## Lampiran: asumsi implementasi Tahap 2-4 (bukan dari SRS; mohon dikoreksi bila keliru)
+
+- Satu item bukti per jenis per laporan (`evidences_one_per_type`); mengganti file = versi baru. Kolom `current_status` tidak disimpan (turunan dari versi).
+- Bukti ditulis hanya lewat RPC `add_evidence` / `replace_evidence_version`, yang mencocokkan file di Storage (ada, diunggah pemanggil, ukuran/tipe sama).
+- Pelapor yang juga petugas dianggap berkonflik atas laporannya sendiri (`private.has_conflict`).
+- Rekomendasi verifier wajib bercatatan. Keputusan moderator hanya sah bila ada rekomendasi yang dibuat setelah laporan terakhir masuk Under Review (per siklus). Moderator boleh memutuskan berbeda dari rekomendasi, dengan alasan wajib.
+- Setelah rekomendasi selesai pada satu siklus, review baru tidak dibuka lagi pada siklus itu. Bila verifier menyatakan konflik, review-nya dilepas (`abandoned`) dan verifier lain dapat mengambil alih.
+- Daftar nilai `finding_type` (evidence_quality, consistency, location, timeline, other), `assessment` (supports, inconclusive, contradicts), dan `basis` duplikasi (location, time, story, evidence) adalah usulan; dasar `location` saja ditolak (BR-08).
+- Keberatan: siapa pun yang login dengan email terverifikasi dapat mengajukan atas laporan Verified (satu terbuka per pengguna per laporan). Verifier mencatat pemeriksaan; moderator memutuskan: `reject_objection`, `reopen` (Verified -> Under Review) atau `reject_report` (Verified -> Rejected).
+- Pelapor tidak melihat keberatan pihak lain atas laporannya.
