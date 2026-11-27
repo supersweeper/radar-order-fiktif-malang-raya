@@ -49,7 +49,7 @@ select t.ok(not has_table_privilege('anon', 'public.verification_reviews', 'sele
         and not has_table_privilege('service_role', 'public.verification_reviews', 'insert,update,delete'),
         'anon tidak punya akses; service_role tidak bisa menulis');
 select t.ok(not has_function_privilege('anon', 'public.start_review(uuid)', 'execute')
-        and not has_function_privilege('anon', 'public.decide_report(uuid,text,text)', 'execute')
+        and not has_function_privilege('anon', 'public.decide_report(uuid,text,text,uuid)', 'execute')
         and not has_function_privilege('anon', 'public.file_objection(uuid,text)', 'execute')
         and has_function_privilege('authenticated', 'public.start_review(uuid)', 'execute')
         and not has_function_privilege('authenticated', 'private.lock_report_for_staff(uuid,public.app_role[])', 'execute'),
@@ -95,7 +95,7 @@ select t.throws(format($q$insert into public.conflict_declarations (report_id, s
 insert into public.conflict_declarations (report_id, staff_id, reason) values (t.rid('p0b'), t.uv(), 'fixture append-only');
 select t.throws($q$update public.conflict_declarations set reason = 'x'$q$, 'append-only', 'conflict_declarations append-only (UPDATE)');
 select t.throws($q$delete from public.conflict_declarations$q$, 'append-only', 'conflict_declarations append-only (DELETE)');
-select t.throws($q$truncate public.objections$q$, 'TRUNCATE ditolak', 'objections tidak bisa di-truncate');
+select t.throws($q$truncate public.objections$q$, 'cannot truncate', 'objections tidak bisa di-truncate (dijaga FK dan trigger)');
 
 -- Tutup review p0 secara fixture agar alur RPC di bawah berjalan dari awal
 select set_config('app.review_close', 'on', false);
