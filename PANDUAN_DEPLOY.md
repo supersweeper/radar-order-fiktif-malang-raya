@@ -21,7 +21,7 @@ window.APP_CONFIG = { SUPABASE_URL: "https://xxxx.supabase.co", SUPABASE_ANON_KE
 Jalankan file di `supabase/migrations/` **berurutan** lewat SQL Editor atau `supabase db push`.
 `supabase_schema.sql` lama sudah *deprecated*; jangan dijalankan untuk proyek baru.
 
-Status: `0001` (enum) dan `0002` (profil, peran, audit log). Tabel laporan, bukti, forum, sanksi menyusul pada tahap berikutnya (lihat `docs/RANCANGAN_DB_FASE_1.md`).
+Status: `0001` (enum), `0002` (profil, peran, audit log), `0003` (laporan, riwayat, transisi status), `0004` (bukti, versi bukti, bucket privat `evidence`; butuh Storage aktif). Verifikasi, forum, sanksi menyusul pada tahap berikutnya (lihat `docs/RANCANGAN_DB_FASE_1.md`).
 
 **Jika proyek Anda pernah menjalankan `supabase_schema.sql` lama:** `0002` akan berhenti dengan pesan jelas bila menemukan tabel `public.reports` lama, tanpa mengubah data apa pun. Ekspor datanya lalu ganti nama tabel lama sebelum melanjutkan.
 
