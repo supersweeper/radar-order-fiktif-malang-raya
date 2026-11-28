@@ -67,3 +67,19 @@ create table if not exists storage.objects (
 alter table storage.objects enable row level security;
 grant usage on schema storage to anon, authenticated, service_role;
 grant all on storage.buckets, storage.objects to anon, authenticated, service_role;
+
+-- ---------------------------------------------------------------------------
+-- Stub Vault dan peran Auth (Tahap 6). Nilai pepper di bawah HANYA nilai uji lokal.
+-- ---------------------------------------------------------------------------
+do $$ begin
+  create role supabase_auth_admin nologin;
+exception when duplicate_object then null; end $$;
+create schema if not exists vault;
+create table if not exists vault.decrypted_secrets (
+  id               uuid primary key default gen_random_uuid(),
+  name             text unique,
+  decrypted_secret text
+);
+insert into vault.decrypted_secrets (name, decrypted_secret)
+values ('blacklist_pepper', 'pepper-uji-lokal-bukan-rahasia-0123456789')
+on conflict (name) do nothing;

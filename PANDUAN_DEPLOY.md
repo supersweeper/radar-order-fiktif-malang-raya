@@ -21,7 +21,9 @@ window.APP_CONFIG = { SUPABASE_URL: "https://xxxx.supabase.co", SUPABASE_ANON_KE
 Jalankan file di `supabase/migrations/` **berurutan** lewat SQL Editor atau `supabase db push`.
 `supabase_schema.sql` lama sudah *deprecated*; jangan dijalankan untuk proyek baru.
 
-Status: `0001` (enum), `0002` (profil, peran, audit log), `0003` (laporan, riwayat, transisi status), `0004` (bukti, versi bukti, bucket privat `evidence`; butuh Storage aktif), `0005` (pemeriksaan verifier, duplikasi, penarikan, keberatan, konflik kepentingan), `0006` (forum keputusan, peserta, suara). Sanksi, banding, blacklist, view publik menyusul pada tahap berikutnya (lihat `docs/RANCANGAN_DB_FASE_1.md`).
+Status: `0001` (enum), `0002` (profil, peran, audit log), `0003` (laporan, riwayat, transisi status), `0004` (bukti, versi bukti, bucket privat `evidence`; butuh Storage aktif), `0005` (pemeriksaan verifier, duplikasi, penarikan, keberatan, konflik kepentingan), `0006` (forum keputusan, peserta, suara), `0007` (sanksi, banding, blacklist privat, pembatasan akun). View publik menyusul pada tahap berikutnya (lihat `docs/RANCANGAN_DB_FASE_1.md`).
+
+**Pepper blacklist (WAJIB sebelum blokir permanen dipakai).** Fingerprint email di `blacklist_entries` dibuat dengan HMAC-SHA256 memakai rahasia `blacklist_pepper` dari Supabase Vault. Aktifkan Vault, lalu buat rahasia acak panjang (min. 16 karakter) di SQL Editor, **jangan** menyimpannya di repo: `select vault.create_secret('<string-acak-panjang>', 'blacklist_pepper');`. Tanpa pepper, `approve_permanent_ban` gagal tertutup (tidak ada yang berubah). Mengganti pepper membuat fingerprint lama tidak cocok lagi; catat dan simpan pepper dengan aman.
 
 **Jika proyek Anda pernah menjalankan `supabase_schema.sql` lama:** `0002` akan berhenti dengan pesan jelas bila menemukan tabel `public.reports` lama, tanpa mengubah data apa pun. Ekspor datanya lalu ganti nama tabel lama sebelum melanjutkan.
 

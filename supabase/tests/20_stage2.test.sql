@@ -118,7 +118,7 @@ select t.ok(not has_function_privilege('authenticated', 'private.transition_repo
             and has_function_privilege('authenticated', 'public.cancel_report(uuid,text)', 'execute')
             and not has_function_privilege('anon', 'public.submit_report(uuid)', 'execute'),
             'mesin transisi tertutup; RPC pelapor hanya untuk authenticated');
-select t.ok(not private.account_restricted(t.ua()), 'PLACEHOLDER account_restricted() = false sampai Tahap 6 (sanksi)');
+select t.ok(not private.account_restricted(t.ua()), 'account_restricted() = false bila tidak ada sanksi aktif (versi nyata sejak Tahap 6)');
 
 -- Mesin transisi dipanggil langsung (sebagai pemilik DB)
 select t.throws($q$select private.transition_report(gen_random_uuid(), 'pending', 'x', 'owner', 'x')$q$, 'report_not_found', 'mesin: laporan tak ditemukan');
